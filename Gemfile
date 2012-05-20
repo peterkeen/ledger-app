@@ -2,4 +2,4 @@
 
 source "http://rubygems.org"
 
-gem "ledger_web", ">= 1.4.9"
+gem "ledger_web", :git => "git://github.com/peterkeen/ledger-web.git", :branch => "master"
