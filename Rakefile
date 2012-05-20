@@ -7,6 +7,7 @@ task :default => [:load]
 
 task :load_config do
   LedgerWeb::Config.instance.load_user_config(File.dirname(__FILE__))
+  LedgerWeb::Database.connect
 end
 
 task :load => :load_config do
