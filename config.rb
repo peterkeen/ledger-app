@@ -36,7 +36,7 @@ LedgerWeb::Config.new do |config|
     d = Digest::SHA1.new
     puts "Calculating checksum"
 
-    d.file("/Users/peter/ledger.txt")
+    d.file(config.get :ledger_file)
 
     config.set :checksum, d.hexdigest()
     puts "Done calculating checksum"
