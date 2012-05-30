@@ -19,4 +19,3 @@ end
 task :migrate => :load_config do
   LedgerWeb::Database.run_migrations
 end
-
