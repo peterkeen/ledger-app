@@ -200,7 +200,7 @@ def relative_time(start_time)
   when 60 .. (3600-1)
     return "#{(diff_seconds/60).to_i} minutes ago"
   when 3600 .. (3600*24-1)
-    return "#{(diff_seconds/360).to_i} hours ago"
+    return "#{(diff_seconds/3600).to_i} hours ago"
   when (3600*24) .. (3600*24*30) 
     return "#{(diff_seconds/(3600*24)).to_i} days ago"
   else
