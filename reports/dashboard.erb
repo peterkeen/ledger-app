@@ -193,7 +193,7 @@ from
 <% end %>
 <%
 def relative_time(start_time)
-  diff_seconds = Time.now.utc - start_time
+  diff_seconds = Time.now.utc - start_time.utc
   case diff_seconds
   when 0 .. 59
     return"#{diff_seconds.to_i} seconds ago"
