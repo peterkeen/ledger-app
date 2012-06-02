@@ -67,7 +67,7 @@
      emergency_fund as "Emergency Fund",
      expenses as "Trailing 12 Month Expenses",
      emergency_fund / expenses as "Months",
-     (3 - (emergency_fund / expenses)) * expenses as "Needed"
+     case when emergency_fund / expenses > 3 then 0 else (3 - (emergency_fund / expenses)) * expenses end as "Needed"
  from (
      select
          xtn_month,
