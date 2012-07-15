@@ -143,9 +143,8 @@
 <% @budget = query do %>
 select
     xtn_month as "Month",
-    pay_period as "Pay Period",
     sum(amount) as "Spent",
-    700 - sum(amount) as "Remaining"
+    1400 - sum(amount) as "Remaining"
 from
     ledger
 where
@@ -161,11 +160,9 @@ where
     and account !~ 'Computer'
     and not virtual
 group by
-    xtn_month,
-    pay_period
+    xtn_month
 order by
-    xtn_month desc,
-    pay_period desc
+    xtn_month desc
 limit 1
 <% end %>
 
@@ -211,7 +208,7 @@ def relative_time(start_time)
 end
 @last_updated = relative_time(@last_updated_report.rows[0][0])
 %>
-<% @budget_remaining = @budget.rows[0][3] %>
+<% @budget_remaining = @budget.rows[0][2] %>
 <% @budget_color = @budget_remaining > 0 ? 'green' : 'red' %>
 <% @unbudgeted_remaining = [@current_accounts.rows[2][2] - @budget_remaining.abs, 0].max%>
 <% @unbudgeted_color = @unbudgeted_remaining > 0 ? 'green' : 'red' %>
