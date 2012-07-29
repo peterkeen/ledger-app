@@ -1,0 +1,135 @@
+<% @report = query do %>
+with
+net_income as (select
+    xtn_month,
+    sum(amount) as amount
+from
+    ledger
+where
+    account ~ 'Checking'
+    and xtn_id in (select xtn_id from ledger where account ~ 'Income:Salary')
+group by
+    xtn_month
+),
+ordinary_expenses as (select
+    xtn_month,
+    account,    
+    sum(amount) as amount
+from
+    ledger
+where
+    account ~ 'Expenses'
+    and account !~ 'Depreciation'
+    and account !~ 'Taxes'
+    and account !~ 'Interest'
+    and account !~ 'Insurance'
+    and not virtual
+    and xtn_id in (select xtn_id from ledger where account ~ 'Checking')
+group by
+    xtn_month,
+    account
+),
+budgeted_expenses as (select
+    xtn_month,
+    sum(amount) as amount
+from
+    ordinary_expenses
+where
+    account in (
+      'Expenses:Food',
+      'Expenses:Food:Lunch',
+      'Expenses:Food:Dinner',
+      'Expenses:Food:Breakfast',
+      'Expenses:Food:Groceries',
+      'Expenses:Entertainment',
+      'Expenses:Fuel',
+      'Expenses:Rent',
+      'Expenses:Utils:Gas',
+      'Expenses:Utils:Electric',
+      'Expenses:Cable',
+      'Expenses:Cell Phone',
+      'Expenses:Utils:Water',
+      'Expenses:Gym'
+    )
+group by
+    xtn_month
+),
+unbudgeted_expenses as (select
+    xtn_month,
+    sum(amount) as amount
+from
+    ordinary_expenses
+where
+    account not in (
+      'Expenses:Food',
+      'Expenses:Food:Lunch',
+      'Expenses:Food:Dinner',
+      'Expenses:Food:Breakfast',
+      'Expenses:Food:Groceries',
+      'Expenses:Entertainment',
+      'Expenses:Fuel',
+      'Expenses:Rent',
+      'Expenses:Utils:Gas',
+      'Expenses:Utils:Electric',
+      'Expenses:Cable',
+      'Expenses:Cell Phone',
+      'Expenses:Utils:Water',
+      'Expenses:Gym'
+    )
+group by
+    xtn_month
+),
+savings as (select
+    xtn_month,
+    sum(amount) as amount
+from
+    ledger
+where
+    account ~ 'Assets:Funds'
+    and account !~ 'Assets:Funds:Bonus:Taxes'
+group by
+    xtn_month
+),
+debt as (select
+    xtn_month,
+    sum(amount) as amount
+from
+    ledger
+where
+    note ~ 'Payment'
+    and account ~ 'Liabilities:Amex'
+group by
+    xtn_month
+),
+months as (select xtn_month from accounts_months group by xtn_month)
+select
+    xtn_month as "Month",
+    net_income as "Net Income",
+    budgeted as "Budgeted",
+    unbudgeted as "Unbudgeted",
+    savings as "Savings",
+    debt as "Debt",
+    net_income - budgeted - unbudgeted - savings - debt as "Cash Flow"
+from (
+    select
+        xtn_month,
+        coalesce(net_income.amount, 0) as net_income,
+        coalesce(budgeted_expenses.amount, 0) as budgeted,
+        coalesce(unbudgeted_expenses.amount, 0) as unbudgeted,
+        coalesce(savings.amount, 0.00) as savings,
+        coalesce(debt.amount, 0.00) as debt
+    from
+        months
+        left outer join net_income using (xtn_month)
+        left outer join budgeted_expenses using (xtn_month)
+        left outer join unbudgeted_expenses using (xtn_month)
+        left outer join savings using (xtn_month)
+        left outer join debt using (xtn_month)
+    order by
+        xtn_month
+) x
+<% end %>
+<div class="page-title">
+  <h1>Cash Flow</h1>
+</div>
+<%= table(@report) %>
