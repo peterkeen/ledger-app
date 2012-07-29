@@ -141,10 +141,32 @@
 <% end %>
 
 <% @budget = query do %>
-select
-    xtn_month as "Month",
-    sum(amount) as "Spent",
-    1400 - sum(amount) as "Remaining"
+with expenses as (select
+    xtn_month,
+    avg(amount) over (rows 12 preceding) as expenses
+from (
+    select
+        xtn_month,
+        sum(amount) as amount
+    from
+        ledger
+    where
+        account ~ 'Expenses'
+        and account !~ 'Depreciation'
+        and account !~ 'Taxes'
+        and account !~ 'Interest'
+        and account !~ 'Insurance'
+        and account !~ 'Travel'
+        and account !~ 'Computers'
+        and not virtual
+    group by
+        xtn_month
+    order by
+        xtn_month
+),
+spent as (select
+    xtn_month,
+    sum(amount) as amount
 from
     ledger
 where
@@ -161,6 +183,14 @@ where
     and not virtual
 group by
     xtn_month
+)
+select
+    xtn_month as "Month",
+    spent.amount as "Spent",
+    expenses.amount - spent.amount as "Remaining"
+from
+    expenses
+    left outer join spent using (xtn_month)
 order by
     xtn_month desc
 limit 1
