@@ -105,8 +105,8 @@ months as (select xtn_month from accounts_months group by xtn_month)
 select
     xtn_month as "Month",
     net_income as "Net Income",
-    budgeted as "Budgeted",
-    unbudgeted as "Unbudgeted",
+    budgeted as "Ordinary",
+    unbudgeted as "Onetime",
     savings as "Savings",
     debt as "Debt",
     net_income - budgeted - unbudgeted - savings - debt as "Cash Flow"
@@ -126,7 +126,7 @@ from (
         left outer join savings using (xtn_month)
         left outer join debt using (xtn_month)
     order by
-        xtn_month
+        xtn_month desc
 ) x
 <% end %>
 <div class="page-title">
