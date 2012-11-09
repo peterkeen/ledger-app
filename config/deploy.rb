@@ -12,7 +12,7 @@ role :db,  "lionel.local", :primary => true # This is where Rails migrations wil
 
 default_run_options[:pty] = true
 set :user, "peter"
-set :base_port, 6000
+set :base_port, 6500
 
 set :buildpack_url, "https://github.com/peterkeen/heroku-buildpack-ruby"
 set :buildpack_hash, Digest::SHA1.hexdigest(buildpack_url)
