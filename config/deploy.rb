@@ -12,6 +12,7 @@ role :db,  "lionel.local", :primary => true # This is where Rails migrations wil
 
 default_run_options[:pty] = true
 set :user, "peter"
+set :base_port, 6000
 
 set :buildpack_url, "https://github.com/peterkeen/heroku-buildpack-ruby"
 set :buildpack_hash, Digest::SHA1.hexdigest(buildpack_url)
@@ -65,6 +66,8 @@ end
 
 namespace :deploy do
   task :restart do
-    sudo "cd #{release_path} && foreman export launchd /Library/LaunchDaemons -l /var/log/#{application} -a #{application} -u #{user}"
+    sudo "foreman export launchd /Library/LaunchDaemons -d #{release_path} -l /var/log/#{application} -a #{application} -u #{user} -p #{base_port}"
+    sudo "launchctl unload -wF /Library/LaunchDaemons/#{application}*.plist; true"
+    sudo "launchctl load -wF /Library/LaunchDaemons/#{application}*.plist"
   end
 end
