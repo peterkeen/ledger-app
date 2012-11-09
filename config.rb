@@ -43,6 +43,21 @@ LedgerWeb::Config.new do |config|
   end
 
   config.add_hook :after_load do |db|
+    puts "Loading budget"
+
+    db["delete from budget_periods"].delete
+
+    path = File.join(File.dirname(ENV['LEDGER_FILE']), "budget_periods.csv")
+    return unless File.exists?(path)
+
+    CSV.foreach(path, :headers => true) do |row|
+      db[:budget_periods].insert(row.to_hash)
+    end
+
+    puts "Done loading budget"
+  end
+
+  config.add_hook :after_load do |db|
     puts "Inserting update record"
     now = Time.now.utc
     start = config.get :load_start
@@ -56,4 +71,5 @@ LedgerWeb::Config.new do |config|
     )
     puts "Done Inserting Update Record"
   end
+
 end
