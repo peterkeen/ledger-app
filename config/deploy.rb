@@ -62,3 +62,9 @@ before "deploy:finalize_update" do
 
   put(env_contents, "#{release_path}/.env")
 end
+
+namespace :deploy do
+  task :restart do
+    sudo "cd #{release_path} && foreman export launchd /Library/LaunchDaemons -l /var/log/#{application} -a #{application} -u #{user}"
+  end
+end
