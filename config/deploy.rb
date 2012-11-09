@@ -11,6 +11,8 @@ role :web, "lionel.local"                          # Your HTTP server, Apache/et
 role :db,  "lionel.local", :primary => true # This is where Rails migrations will run
 
 default_run_options[:pty] = true
+default_run_options[:shell] = '/bin/bash'
+
 set :user, "peter"
 set :base_port, 6500
 
@@ -67,7 +69,6 @@ end
 namespace :deploy do
   task :restart do
     sudo "foreman export launchd /Library/LaunchDaemons -d #{release_path} -l /var/log/#{application} -a #{application} -u #{user} -p #{base_port}"
-    sudo "launchctl unload -wF /Library/LaunchDaemons/#{application}*.plist; true"
-    sudo "launchctl load -wF /Library/LaunchDaemons/#{application}*.plist"
+    sudo "launchctl unload -wF /Library/LaunchDaemons/ledger-web-1.plist; launchctl load -wF /Library/LaunchDaemons/ledger-web-1.plist"
   end
 end
