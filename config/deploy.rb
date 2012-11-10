@@ -1,7 +1,7 @@
 require 'digest/sha1'
 
 set :application, "ledger"
-set :repository,  "git@git.bugsplat.info:peter/ledger.git"
+set :repository,  "git@git.bugsplat.info:peter/ledger-app.git"
 set :deploy_to, "/Users/peter/apps/ledger"
 set :launchd_conf_path, "/Users/peter/Library/LaunchAgents"
 
