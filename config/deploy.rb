@@ -3,6 +3,7 @@ require 'digest/sha1'
 set :application, "ledger"
 set :repository,  "git@git.bugsplat.info:apps/ledger.git"
 set :deploy_to, "/Users/peter/apps/ledger"
+set :launchd_conf_path, "/Users/peter/Library/LaunchAgents"
 
 set :scm, :git
 # Or: `accurev`, `bzr`, `cvs`, `darcs`, `git`, `mercurial`, `perforce`, `subversion` or `none`
@@ -68,7 +69,8 @@ end
 
 namespace :deploy do
   task :restart do
-    sudo "foreman export launchd /Library/LaunchDaemons -d #{release_path} -l /var/log/#{application} -a #{application} -u #{user} -p #{base_port}"
-    sudo "launchctl unload -wF /Library/LaunchDaemons/ledger-web-1.plist; launchctl load -wF /Library/LaunchDaemons/ledger-web-1.plist"
+    sudo "launchctl unload -wF #{launchd_conf_path}/ledger-web-1.plist; true"
+    sudo "foreman export launchd #{launchd_conf_path} -d #{release_path} -l /var/log/#{application} -a #{application} -u #{user} -p #{base_port}"
+    sudo "launchctl load -wF #{launchd_conf_path}/ledger-web-1.plist; true"
   end
 end
