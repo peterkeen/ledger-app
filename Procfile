@@ -1,2 +1,2 @@
 web: bin/web
-load: bin/load_ledger.sh
+load: bundle exec rake load
