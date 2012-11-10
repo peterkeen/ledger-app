@@ -20,6 +20,7 @@ set :base_port, 6500
 set :buildpack_url, "https://github.com/peterkeen/heroku-buildpack-ruby"
 set :buildpack_hash, Digest::SHA1.hexdigest(buildpack_url)
 set :buildpack_path, "#{shared_path}/buildpack-#{buildpack_hash}"
+set :concurrency, "web=1"
 
 set :deploy_env, {
   'DATABASE_URL' => 'postgres://ledger@localhost/ledger',
@@ -70,7 +71,7 @@ end
 namespace :deploy do
   task :restart do
     sudo "launchctl unload -wF #{launchd_conf_path}/ledger-web-1.plist; true"
-    sudo "foreman export launchd #{launchd_conf_path} -d #{release_path} -l /var/log/#{application} -a #{application} -u #{user} -p #{base_port}"
+    sudo "foreman export launchd #{launchd_conf_path} -d #{release_path} -l /var/log/#{application} -a #{application} -u #{user} -p #{base_port} -c #{concurrency}"
     sudo "launchctl load -wF #{launchd_conf_path}/ledger-web-1.plist; true"
   end
 end
