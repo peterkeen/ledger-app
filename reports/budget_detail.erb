@@ -1,0 +1,41 @@
+<% default 'month', Date.today.strftime("%Y-%m-01") %>
+<% @query = query do %>
+select
+    b.account as "Account",
+    b.amount as "Budget",
+    coalesce(x.amount, 0) as "Spent",
+    coalesce(b.amount - x.amount, 0) as "Diff"
+from
+(select * from budget_months where xtn_month = :month) b
+left outer join (
+    select
+        xtn_month,
+        account,
+        sum(amount) as amount
+    from
+        expenses
+    where
+        account in (select distinct account from budget_periods)
+        and xtn_month = :month
+    group by
+        xtn_month,
+        account
+) x using (account)
+order by
+   b.xtn_month,
+   x.account
+<% end %>
+<% @budget_summary = BudgetSummaryReport.run(1) %>
+<div class="page-header">
+  <h1>Budget Detail <small><%= LedgerWeb::Report.params[:month] %></small></h1>
+</div>
+<div class="row">
+  <div class="span16">
+    <%= table @budget_summary %>
+  </div>
+</div>
+<div class="row">
+  <div class="span16">
+    <%= table @query  %>
+  </div>
+</div>
