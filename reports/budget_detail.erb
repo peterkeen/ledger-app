@@ -26,8 +26,13 @@ order by
    x.account
 <% end %>
 <% @budget_summary = BudgetSummaryReport.run(1) %>
+<%
+  this_month = Date.strptime(LedgerWeb::Report.params[:month], "%Y-%m-%d")
+  @prev_month = (this_month << 1).strftime("%Y-%m-01")
+  @next_month = (this_month >> 1).strftime("%Y-%m-01")
+%>
 <div class="page-header">
-  <h1>Budget Detail <small><%= LedgerWeb::Report.params[:month] %></small></h1>
+  <h1>Budget Detail <small><%= LedgerWeb::Report.params[:month] %> <a href="/reports/budget_detail?month=<%= @prev_month %>">prev</a> <a href="/reports/budget_detail?month=<%= @next_month %>">next</a></small></h1>
 </div>
 <div class="row">
   <div class="span16">
