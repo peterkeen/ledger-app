@@ -1,6 +1,7 @@
 class BudgetSummaryReport < LedgerWeb::Report
   def self.run(limit=nil)
     limit_sql = limit ? "limit #{limit.to_i}" : ""
+    month_where = params[:month] ? 'xtn_month = :month' : '1 = 1'
     from_query("""
       with budget_summary as (
       select
@@ -34,6 +35,8 @@ class BudgetSummaryReport < LedgerWeb::Report
           sum(budgeted) - sum(expense) as \"Diff\"
       from
           budget_summary
+      where
+          #{month_where}
       group by
           xtn_month
       order by
