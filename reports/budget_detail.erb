@@ -31,11 +31,11 @@ order by
 </div>
 <div class="row">
   <div class="span16">
-    <%= table @budget_summary %>
+    <%= table(@budget_summary) %>
   </div>
 </div>
 <div class="row">
   <div class="span16">
-    <%= table @query  %>
+    <%= table @query, :links => {/Account/ => "/reports/register?account=:0&month=#{LedgerWeb::Report.params[:month]}" } %>
   </div>
 </div>
