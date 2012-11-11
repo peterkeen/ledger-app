@@ -10,7 +10,7 @@ Dir[File.join(lib_dir, "*.rb")].each {|file| require File.basename(file) }
 
 ledger = LedgerWeb::Application.new
 
-protected_ledger = Rack::Auth::Basic.new(ledger) do |username, password|
+protected_ledger = Rack::Auth::Basic.new(ledger, "Ledger") do |username, password|
   username == ENV['LEDGER_USERNAME'] && password == ENV['LEDGER_PASSWORD']
 end
 
