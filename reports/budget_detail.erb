@@ -4,7 +4,7 @@ select
     b.account as "Account",
     b.amount as "Budget",
     coalesce(x.amount, 0) as "Spent",
-    coalesce(b.amount - x.amount, 0) as "Diff"
+    b.amount - coalesce(x.amount, 0) as "Diff"
 from
 (select * from budget_months where xtn_month = :month) b
 left outer join (
