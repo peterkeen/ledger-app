@@ -95,8 +95,8 @@ end
 
 namespace :deploy do
   task :restart do
-    sudo "launchctl unload -wF #{foreman_export_path}/ledger-web-1.plist; true"
-    sudo "foreman export #{foreman_export_type} #{foreman_export_path} -d #{release_path} -l /var/log/#{application} -a #{application} -u #{user} -p #{base_port} -c #{concurrency}"
-    sudo "launchctl load -wF #{launchd_conf_path}/ledger-web-1.plist; true"
+    run "launchctl unload -wF #{foreman_export_path}/ledger-web-1.plist; true"
+    run "foreman export #{foreman_export_type} #{foreman_export_path} -d #{release_path} -l /var/log/#{application} -a #{application} -u #{user} -p #{base_port} -c #{concurrency}"
+    run "launchctl load -wF #{foreman_export_path}/ledger-web-1.plist; true"
   end
 end
