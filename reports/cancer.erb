@@ -84,9 +84,9 @@
     claims.tags -> 'Received' as "Received",
     claims.tags -> 'Processed' as "Processed",
     claims.amount as "Claim",
-    coalesce(discounts.amount, 0) as "Discount",
-    coalesce(copays.amount, 0) as "Copay",
-    claims.amount - coalesce(discounts.amount, 0) - coalesce(copays.amount, 0) as "Paid",
+    abs(coalesce(discounts.amount, 0)) as "Discount",
+    abs(coalesce(copays.amount, 0)) as "Copay",
+    claims.amount - abs(coalesce(discounts.amount, 0)) - abs(coalesce(copays.amount, 0)) as "Paid",
     claims.tags -> 'EOB' as "EOB"
   from
     claims
