@@ -14,6 +14,6 @@ protected_ledger = Rack::Auth::Basic.new(ledger, "Ledger") do |username, passwor
   username == ENV['LEDGER_USERNAME'] && password == ENV['LEDGER_PASSWORD']
 end
 
-use Rack::Static, :urls => ["/files"], :root => '/usr/local/var/repos/financials'
-
-run protected_ledger
+run Rack::URLMap.new \
+  '/' => protected_ledger,
+  '/files' => Rack::File.new('/usr/local/var/repos/financials')
