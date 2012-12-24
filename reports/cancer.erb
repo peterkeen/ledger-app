@@ -1,0 +1,113 @@
+<% @expenses = query do %>
+  with c_exp as (
+    select
+      replace(account, 'Cancer:Expenses:', '') as "Expense",
+      sum(amount) as "Amount"
+    from
+      ledger
+    where
+      account ~ '^Cancer:Expenses'
+    group by
+      account
+    order by
+      account
+  )
+  select
+    "Expense",
+    "Amount"
+  from c_exp
+  union all
+  select
+    'Total' as "Expense",
+    sum("Amount") as "Amount"
+  from
+    c_exp
+<% end %>
+<% @payments = query do %>
+  select
+    replace(account, 'Cancer:', '') as "Provider",
+    sum(amount) as "Amount"
+  from
+    ledger
+  where
+    account ~ '^Cancer'
+    and account !~ '^Cancer:Expenses'
+    and account !~ '^Cancer:Totals'
+  group by
+    account
+  order by
+    account
+<% end %>
+<% @claims = query do %>
+  with expanded as (
+    select
+      xtn_id,
+      xtn_date,
+      checknum,
+      note,
+      account,
+      amount,
+      replace(replace(trim(tags), '\n ', E','), ': ', E'=>')::hstore as tags
+    from
+      ledger
+    where
+      account ~ '^Cancer'
+  ),
+  claims as (
+    select
+      *
+    from
+      expanded
+    where
+      account ~ '^Cancer:Expenses'
+  ),
+  discounts as (
+    select
+      *
+    from
+      expanded
+    where
+      account ~ '^Cancer:Insurance Discount'
+  ),
+  copays as (
+    select
+      *
+    from
+      expanded
+    where
+      account ~ '^Cancer:Copays'
+  )
+  select
+    claims.xtn_date as "Date",
+    claims.tags -> 'ClaimNum' as "Claim #",
+    claims.note as "Provider",
+    claims.tags -> 'Received' as "Received",
+    claims.tags -> 'Processed' as "Processed",
+    claims.amount as "Claim",
+    coalesce(discounts.amount, 0) as "Discount",
+    coalesce(copays.amount, 0) as "Copay",
+    claims.amount - coalesce(discounts.amount, 0) - coalesce(copays.amount, 0) as "Paid",
+    claims.tags -> 'EOB' as "EOB"
+  from
+    claims
+    left outer join discounts using (xtn_id)
+    left outer join copays using (xtn_id)
+  order by
+    claims.xtn_date
+<% end %>
+<div class="page-header">
+  <h1>Cancer Treatment</h1>
+</div>
+<div class="row">
+  <div class="span8">
+    <%= table @expenses %>
+  </div>
+  <div class="span8">
+    <%= table @payments %>
+  </div>
+</div>
+<div class="row">
+  <div class="span16">
+    <%= table @claims, :links => {/EOB/ => '/files/eobs/:9'} %>
+  </div>
+</div>
