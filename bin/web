@@ -1,3 +1,3 @@
 #!/bin/bash
 
-exec bundle exec rackup -p $PORT
+exec bundle exec rackup -p $PORT 2>&1 | logger -t ledger-app-web
