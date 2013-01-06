@@ -1,5 +1,7 @@
 require 'rubygems'
+require 'capistrano-buildpack'
 
+set :normalize_asset_timestamps, false
 set :application, "ledger-app"
 set :repository, "git@git.bugsplat.info:peter/ledger-app.git"
 set :scm, :git
@@ -15,6 +17,6 @@ set :concurrency, "web=1"
 read_env 'prod'
 
 load 'deploy'
-require 'capistrano-buildpack'
+
 
 
