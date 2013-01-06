@@ -1,3 +1,7 @@
 #!/bin/bash
 
-exec bundle exec rackup -p $PORT 2>&1 | logger -t ledger-app-web
+if [[ $RACK_ENV == "production" ]]; then
+    exec bundle exec rackup -p $PORT 2>&1 | logger -t ledger-app-web
+else
+    exec bundle exec rackup -p $PORT
+fi
