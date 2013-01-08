@@ -79,15 +79,14 @@
   )
   select
     claims.xtn_date as "Date",
-    claims.tags -> 'ClaimNum' as "Claim #",
+    claims.tags -> 'ClaimNum' as "Claim",
     claims.note as "Provider",
     claims.tags -> 'Received' as "Received",
     claims.tags -> 'Processed' as "Processed",
     claims.amount as "Claim",
     abs(coalesce(discounts.amount, 0)) as "Discount",
     abs(coalesce(copays.amount, 0)) as "Copay",
-    claims.amount - abs(coalesce(discounts.amount, 0)) - abs(coalesce(copays.amount, 0)) as "Paid",
-    claims.tags -> 'EOB' as "EOB"
+    claims.amount - abs(coalesce(discounts.amount, 0)) - abs(coalesce(copays.amount, 0)) as "Paid"
   from
     claims
     left outer join discounts using (xtn_id)
@@ -108,6 +107,6 @@
 </div>
 <div class="row">
   <div class="span16">
-    <%= table @claims, :links => {/EOB/ => '/files/eobs/:9'} %>
+    <%= table @claims, :links => {/Claim/ => '/files/eobs/:9'} %>
   </div>
 </div>
