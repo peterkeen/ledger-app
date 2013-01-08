@@ -2,7 +2,7 @@
 
 source "http://rubygems.org"
 
-gem "ledger_web", :git => "git://github.com/peterkeen/ledger-web.git", :branch => "master"
+gem "ledger_web", '1.4.11'
 gem "capistrano"
 gem "capistrano-buildpack"
 gem "puma"
