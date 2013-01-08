@@ -79,7 +79,7 @@
   )
   select
     claims.xtn_date as "Date",
-    claims.tags -> 'ClaimNum' as "Claim",
+    claims.tags -> 'ClaimNum' as "ClaimNum",
     claims.note as "Provider",
     claims.tags -> 'Received' as "Received",
     claims.tags -> 'Processed' as "Processed",
@@ -107,6 +107,6 @@
 </div>
 <div class="row">
   <div class="span16">
-    <%= table @claims, :links => {/Claim/ => '/files/eobs/:9'} %>
+    <%= table @claims, :links => {/ClaimNum/ => '/files/eobs/:9'} %>
   </div>
 </div>
