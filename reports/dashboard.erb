@@ -217,9 +217,3 @@ end
     <%= table @uncleared %>
   </div>
 </div>
-<% ENV.each do |key, val| %>
-  <%= key %> = <%= val %><br>
-<% end %>
-<% request.env.each do |key, val| %>
-  <%= key %> = <%= val %><br>
-<% end %>
