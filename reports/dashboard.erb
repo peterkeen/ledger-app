@@ -217,4 +217,6 @@ end
     <%= table @uncleared %>
   </div>
 </div>
-proto: <%= ENV['HTTP_X_FORWARDED_PROTO'] %>
+<% ENV.each do |key, val| %>
+  <%= key %> = <%= val %><br>
+<% end %>
