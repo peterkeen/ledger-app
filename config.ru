@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'ledger_web'
+require 'rack/ssl'
 
 LedgerWeb::Config.instance.load_user_config(File.dirname(__FILE__))
 LedgerWeb::Database.connect
