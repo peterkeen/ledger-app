@@ -220,6 +220,6 @@ end
 <% ENV.each do |key, val| %>
   <%= key %> = <%= val %><br>
 <% end %>
-proto: <%= request['HTTP_X_FORWARDED_PROTO'] %><br>
-for: <%= request['HTTP_X_FORWARDED_FOR'] %><br>
-https: <%= request['HTTPS'] %><br>
+<% request.env.each do |key, val| %>
+  <%= key %> = <%= val %><br>
+<% end %>
