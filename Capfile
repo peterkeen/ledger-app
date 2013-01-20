@@ -7,13 +7,15 @@ set :repository, "git@git.bugsplat.info:peter/ledger-app.git"
 set :scm, :git
 set :additional_domains, ['ledger.bugsplat.info']
 set :use_ssl, true
+set :use_sudo, true
 
 role :web, "subspace.bugsplat.info"
 set :buildpack_url, "git@git.bugsplat.info:peter/bugsplat-buildpack-ruby-simple"
 
-set :user, "peter"
-set :base_port, 6500
+set :user,        "peter"
+set :app_user,    "ledger-web"
 set :concurrency, "web=1"
+set :base_port,   6500
 
 read_env 'prod'
 
