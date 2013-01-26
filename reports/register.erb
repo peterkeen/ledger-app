@@ -1,7 +1,7 @@
 <% expect ['account'] %>
 <% default 'cleared', false %>
 <% default 'include_virtual', true %>
-<%= LedgerWeb::Report.params.to_json %>
+<%= LedgerWeb::Report.params.keys %>
 <div class="page-header">
   <h1>Register</h1>
 </div>
