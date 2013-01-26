@@ -81,6 +81,7 @@
     claims.xtn_date as "Date",
     claims.tags -> 'ClaimNum' as "ClaimNum",
     claims.note as "Provider",
+    replace(account, 'Cancer:Expenses:', '') as "Expense",
     claims.tags -> 'Received' as "Received",
     claims.tags -> 'Processed' as "Processed",
     claims.amount as "Claim",
