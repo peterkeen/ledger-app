@@ -1,22 +1,9 @@
 <% expect ['account'] %>
 <% default 'cleared', false %>
 <% default 'include_virtual', true %>
-<%= LedgerWeb::Report.params.keys %>
-<%= LedgerWeb::Report.params.values %>
 <div class="page-header">
   <h1>Register</h1>
 </div>
-<div class="row">
-  <div class="span16">
-    <form class="form" method="get">
-      <input type="checkbox" name="cleared" <%= LedgerWeb::Report.params['cleared'] ? "" : "checked" %>> Cleared?
-      <input type="checkbox" name="include_virtual" <%= LedgerWeb::Report.params['include_virtual'] ? "" : "checked" %>> Virtual?
-      <input type="hidden" name="account" value="<%= LedgerWeb::Report.params['account'] %>">
-      <input type="hidden" name="year" value="<%= LedgerWeb::Report.params['year'] %>">
-      <input type="submit">
-    </form>
-  </div>
-</div>  
 <div class="row">
   <div class="span16">
     <%= table RegisterReport.run %>
