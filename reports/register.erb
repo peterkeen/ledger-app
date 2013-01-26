@@ -9,6 +9,8 @@
     <form class="form" method="get">
       <input type="checkbox" name="cleared" <%= LedgerWeb::Report.params['cleared'] ? "" : "checked" %>> Cleared?
       <input type="checkbox" name="include_virtual" <%= LedgerWeb::Report.params['include_virtual'] ? "" : "checked" %>> Virtual?
+      <input type="hidden" name="account" value="<%= LedgerWeb::Report.params['account'] %>">
+      <input type="hidden" name="year" value="<%= LedgerWeb::Report.params['year'] %>">
       <input type="submit">
     </form>
   </div>
