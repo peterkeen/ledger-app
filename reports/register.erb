@@ -7,8 +7,8 @@
 <div class="row">
   <div class="span16">
     <form class="form" method="get">
-      <input type="checkbox" name="cleared"> Cleared?
-      <input type="checkbox" name="include_virtual"> Virtual?
+      <input type="checkbox" name="cleared" <%= Report.params['cleared'].blank? "" : "checked" %>> Cleared?
+      <input type="checkbox" name="include_virtual" <%= Report.params['cleared'].blank? "" : "checked" %>> Virtual?
       <input type="submit">
     </form>
   </div>
