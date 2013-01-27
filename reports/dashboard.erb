@@ -197,7 +197,7 @@ end
     <%= table(@last_bills, :links => {/Account/ => '/reports/register?account=:0&year=:1'}) %>
   </div>
   <div class="span8">
-    <h3>Current Accounts</h3>
+    <h3><a href="/reports/accounts">Current Accounts</a></h3>
     <%= table(@current_accounts, :links => {/Account/ => '/reports/register?account=:0&year=:now'}) %>
   </div>
 </div>
