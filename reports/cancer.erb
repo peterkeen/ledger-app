@@ -95,8 +95,9 @@
   order by
     claims.xtn_date
 <% end %>
+<% @day = (Date.today - Date.parse('2012-12-26')).to_i %>
 <div class="page-header">
-  <h1>Cancer Treatment</h1>
+  <h1>Cancer Treatment <small>Today is day <%= @day %></small></h1>
 </div>
 <div class="row">
   <div class="span8">
