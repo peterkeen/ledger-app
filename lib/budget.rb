@@ -31,8 +31,8 @@ class BudgetSummaryReport < LedgerWeb::Report
       select
           xtn_month as \"Month\",
           sum(budgeted) as \"Budget\",
-          sum(expense) as \"Spent\",
-          sum(budgeted) - sum(expense) as \"Diff\"
+          coalesce(sum(expense), 0) as \"Spent\",
+          sum(budgeted) - coalesce(sum(expense), 0) as \"Diff\"
       from
           budget_summary
       where
