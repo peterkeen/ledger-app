@@ -184,7 +184,7 @@ end
 %>
 <% @budget = BudgetSummaryReport.run %>
 <% @budget_remaining = @budget.rows[0][3] %>
-<% @budget_color = @budget_remaining > 0 ? 'green' : 'red' %>
+<% @budget_color = (@budget_remaining || 0) > 0 ? 'green' : 'red' %>
 <% @unbudgeted_remaining = [@current_accounts.rows[2][2] - @budget_remaining.abs, 0].max%>
 <% @unbudgeted_color = @unbudgeted_remaining > 0 ? 'green' : 'red' %>
 <%
