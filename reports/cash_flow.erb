@@ -18,7 +18,7 @@ ordinary_expenses as (select
 from
     ledger
 where
-    account ~ 'Expenses'
+    account ~ '^Expenses'
     and account !~ 'Depreciation'
     and account !~ 'Taxes'
     and account !~ 'Interest'
