@@ -22,7 +22,6 @@ left outer join (
         account
 ) x using (account)
 order by
-   b.xtn_month,
    x.account
 <% end %>
 <% @budget_summary = BudgetSummaryReport.run(1) %>
