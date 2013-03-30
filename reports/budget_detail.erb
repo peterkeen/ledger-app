@@ -17,6 +17,7 @@ left outer join (
     where
         account in (select distinct account from budget_periods)
         and xtn_month = :month
+        and tags !~ 'Reimburseable'
     group by
         xtn_month,
         account

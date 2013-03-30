@@ -20,6 +20,7 @@ class BudgetSummaryReport < LedgerWeb::Report
               expenses
           where
               account in (select distinct account from budget_periods)
+              and tags !~ 'Reimburseable'
           group by
               xtn_month,
               account
