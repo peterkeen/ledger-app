@@ -12,6 +12,7 @@
 <div class="row">
   <div class="span16">
   <form>
+    <input type="hidden" name="xtn_id" value="<%= params[:xtn_id] %>">
     <input name="account" type="text" class="xlarge" style="height: 27px" placeholder="Account" value="<%= params[:account] %>">
     <select name="year" class="input-small">
       <% @selected_year = params[:year].to_s == "" ? nil : Date.parse(params[:year]).year %>
@@ -34,7 +35,7 @@
 </div>
 <div class="row">
   <div class="span16">
-    <%= table RegisterReport.run, :links => {/Xtn/ => '/reports/register?xtn_id=:0'} %>
+    <%= table RegisterReport.run, :links => {/Xtn/ => "/reports/register?xtn_id=:0&include_virtual=#{params[:include_virtual]}"} %>
   </div>
 </div>  
 
