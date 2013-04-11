@@ -23,7 +23,7 @@ left outer join (
         account
 ) x using (account)
 order by
-   x.account
+   b.account
 <% end %>
 <% @budget_summary = BudgetSummaryReport.run(1) %>
 <%
