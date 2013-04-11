@@ -16,6 +16,7 @@ class RegisterReport < LedgerWeb::Report
 
     from_query("""
       select
+          xtn_id as \"Xtn\",
           xtn_date as \"Date\",
           account as \"Account\",
           note as \"Payee\",
@@ -25,6 +26,7 @@ class RegisterReport < LedgerWeb::Report
           running_sum as \"Balance\"
       from (
           select
+              xtn_id,
               xtn_date,
               xtn_year,
               xtn_month,

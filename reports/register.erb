@@ -1,4 +1,3 @@
-<% expect ['account'] %>
 <% default 'cleared', 'on' %>
 <% default 'include_virtual', false %>
 <% @years = query do %>
@@ -35,7 +34,7 @@
 </div>
 <div class="row">
   <div class="span16">
-    <%= table RegisterReport.run %>
+    <%= table RegisterReport.run, :links => {/Xtn/ => '/reports/register?xtn_id=:0'} %>
   </div>
 </div>  
 
