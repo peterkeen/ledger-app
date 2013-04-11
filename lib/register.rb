@@ -1,10 +1,18 @@
 class RegisterReport < LedgerWeb::Report
   def self.run
-    where_clauses = []
-    where_clauses << "xtn_year = date_trunc('year', cast(:year as date))" unless params[:year].to_s == ""
-    where_clauses << "xtn_month = date_trunc('month', cast(:month as date))" unless params[:month].to_s == ""
+    outer_where_clauses = []
+    outer_where_clauses << "xtn_year = date_trunc('year', cast(:year as date))" unless params[:year].to_s == ""
+    outer_where_clauses << "xtn_month = date_trunc('month', cast(:month as date))" unless params[:month].to_s == ""
 
-    where_clause = (where_clauses.empty? ? ['1 = 1'] : where_clauses).join(" and ")
+    outer_where_clause = (outer_where_clauses.empty? ? ['1 = 1'] : outer_where_clauses).join(" and ")
+
+    inner_where_clauses = []
+    inner_where_clauses << "account ~* :account" unless params[:account].to_s == ""
+    inner_where_clauses << "xtn_id = :xtn_id" unless params[:xtn_id].to_s == ""
+
+    raise "Need either account regex or xtn_id" if inner_where_clauses.empty?
+
+    inner_where_clause = inner_where_clauses.join(" and ")
 
     from_query("""
       select
@@ -28,14 +36,14 @@ class RegisterReport < LedgerWeb::Report
           from
               ledger
           where
-              account ~* :account
+              #{inner_where_clause}
               and (case when :cleared then cleared else true end)
               and (case when :include_virtual then true else not virtual end)
           order by
               xtn_date desc
        ) x
        where
-          #{where_clause}
+          #{outer_where_clause}
     """)
   end
 end
