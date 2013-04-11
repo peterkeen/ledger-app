@@ -9,7 +9,7 @@ class RegisterReport < LedgerWeb::Report
     inner_where_clauses = []
     inner_where_clauses << "account ~* :account" unless params[:account].to_s == ""
     inner_where_clauses << "xtn_id = :xtn_id" unless params[:xtn_id].to_s == ""
-    inner_where_clauses << "virtual" if params[:include_virtual] == "on"
+    inner_where_clauses << "not virtual" if params[:include_virtual] != "on"
     inner_where_clauses << "cleared" if params[:cleared] == "on"
 
     raise "Need either account regex or xtn_id" if inner_where_clauses.empty?
