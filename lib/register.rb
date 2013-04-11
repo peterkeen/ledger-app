@@ -1,8 +1,8 @@
 class RegisterReport < LedgerWeb::Report
   def self.run
     where_clauses = []
-    where_clauses << "xtn_year = date_trunc('year', cast(:year as date))" if params[:year]
-    where_clauses << "xtn_month = date_trunc('month', cast(:month as date))" if params[:month]
+    where_clauses << "xtn_year = date_trunc('year', cast(:year as date))" unless params[:year].to_s == ""
+    where_clauses << "xtn_month = date_trunc('month', cast(:month as date))" unless params[:month].to_s == ""
 
     where_clause = (where_clauses.empty? ? ['1 = 1'] : where_clauses).join(" and ")
 
@@ -13,7 +13,8 @@ class RegisterReport < LedgerWeb::Report
           note as \"Payee\",
           amount as \"Amount\",
           cleared as \"Cleared\",
-          running_sum as \"Sum\"
+          sum(amount) over (order by xtn_date rows unbounded preceding) as \"Sum\",
+          running_sum as \"Balance\"
       from (
           select
               xtn_date,
@@ -27,11 +28,11 @@ class RegisterReport < LedgerWeb::Report
           from
               ledger
           where
-              account = :account
+              account ~* :account
               and (case when :cleared then cleared else true end)
               and (case when :include_virtual then true else not virtual end)
           order by
-              xtn_date
+              xtn_date desc
        ) x
        where
           #{where_clause}

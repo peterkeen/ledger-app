@@ -1,8 +1,37 @@
 <% expect ['account'] %>
-<% default 'cleared', false %>
-<% default 'include_virtual', true %>
+<% default 'cleared', 'on' %>
+<% default 'include_virtual', false %>
+<% @years = query do %>
+  select xtn_year from accounts_years group by xtn_year order by xtn_year desc
+<% end %>
+<% @months = query do %>
+  select xtn_month from accounts_months group by xtn_month order by xtn_month desc
+<% end %>
 <div class="page-header">
   <h1>Register</h1>
+</div>
+<div class="row">
+  <div class="span16">
+  <form>
+    <input name="account" type="text" class="xlarge" style="height: 27px" placeholder="Account" value="<%= params[:account] %>">
+    <select name="year" class="input-small">
+      <% @selected_year = params[:year].to_s == "" ? nil : Date.parse(params[:year]).year %>
+      <option value="">Year</option>
+      <% @years.each_row do |row| %>
+      <option value="<%= row[0][0] %>" <%= (@selected_year == row[0][0].year) ? "selected" : "" %>><%= row[0][0].year %></option>
+      <% end %>
+    </select>
+    <select name="month" class="input-small">
+      <% @selected_month = params[:month].to_s == "" ? nil : Date.parse(params[:month]).to_s%>
+      <option value="">Month</option>
+      <% @months.each_row do |row| %>
+      <option value="<%= row[0][0] %>" <%= (@selected_month == row[0][0].to_s) ? "selected" : "" %>><%= row[0][0].to_s %></option>
+      <% end %>
+    </select>
+    <input name="include_virtual" type="checkbox" <%= params[:include_virtual].to_s == "on" ? "checked" : "" %>> Include Virtual
+    <input type="submit" value="Update" class="btn btn-danger">
+  </form>
+  </div>
 </div>
 <div class="row">
   <div class="span16">
