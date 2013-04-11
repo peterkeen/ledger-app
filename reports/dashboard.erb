@@ -209,7 +209,7 @@ end
 <div class="row">
   <div class="span8">
     <h3>Fund Levels</h3>
-    <%= table(@fund_levels, :links => {/Account/ => '/reports/register?account=:0&year=:now'}) %>
+    <%= table(@fund_levels, :links => {/Account/ => '/reports/register?account=:0&year=:now&include_virtual=on'}) %>
   </div>
   <div class="span8">
     <h3>Emergency Fund Longevity</h3>
