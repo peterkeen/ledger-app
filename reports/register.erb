@@ -10,32 +10,38 @@
   <h1>Register</h1>
 </div>
 <div class="row">
-  <div class="span16">
-  <form>
+  <div class="span12">
+  <form class="form form-inline">
     <input type="hidden" name="xtn_id" value="<%= params[:xtn_id] %>">
     <input name="account" type="text" class="xlarge" style="height: 27px" placeholder="Account" value="<%= params[:account] %>">
     <select name="year" class="input-small">
       <% @selected_year = params[:year].to_s == "" ? nil : Date.parse(params[:year]).year %>
       <option value="">Year</option>
-      <% @years.each_row do |row| %>
-      <option value="<%= row[0][0] %>" <%= (@selected_year == row[0][0].year) ? "selected" : "" %>><%= row[0][0].year %></option>
+      <% @years.each do |row| %>
+      <option value="<%= row[0].value %>" <%= (@selected_year == row[0].value.year) ? "selected" : "" %>><%= row[0].value.year %></option>
       <% end %>
     </select>
     <select name="month" class="input-small">
       <% @selected_month = params[:month].to_s == "" ? nil : Date.parse(params[:month]).to_s%>
       <option value="">Month</option>
-      <% @months.each_row do |row| %>
-      <option value="<%= row[0][0] %>" <%= (@selected_month == row[0][0].to_s) ? "selected" : "" %>><%= row[0][0].to_s %></option>
+      <% @months.each do |row| %>
+      <option value="<%= row[0].value %>" <%= (@selected_month == row[0].value.to_s) ? "selected" : "" %>><%= row[0].value.to_s %></option>
       <% end %>
     </select>
     <input name="include_virtual" type="checkbox" <%= params[:include_virtual].to_s == "on" ? "checked" : "" %>> Include Virtual
-    <input type="submit" value="Update" class="btn btn-danger">
+    <input type="submit" value="Update" class="btn">
   </form>
   </div>
 </div>
 <div class="row">
-  <div class="span16">
-    <%= table RegisterReport.run, :links => {/Xtn/ => "/reports/register?xtn_id=:0&include_virtual=#{params[:include_virtual]}"} %>
+  <div class="span12">
+    <%= table RegisterReport.run do |t|
+          t.decorate :all => LedgerWeb::Decorators::HighlightDecorator.new('#d9edf7'), :if => lambda{|c,r| !r[5].value }
+          t.decorate /Xtn/ => LedgerWeb::Decorators::IconDecorator.new('chevron-right')
+          t.link /Account/ => "/reports/register?account=:this&include_virtual=#{params[:include_virtual]}&year=#{params[:year]}&month=#{params[:month]}"
+          t.link /Xtn/ => "/reports/register?xtn_id=:this&include_virtual=#{params[:include_virtual]}"
+        end
+    %>
   </div>
 </div>  
 

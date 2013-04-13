@@ -180,12 +180,12 @@ def relative_time(start_time)
     return start_time.strftime("%m/%d/%Y")
   end
 end
-@last_updated = relative_time(@last_updated_report.rows[0][0])
+@last_updated = relative_time(@last_updated_report.rows[0][0].value)
 %>
 <% @budget = BudgetSummaryReport.run %>
-<% @budget_remaining = (@budget.rows[0][3] || 0) %>
+<% @budget_remaining = (@budget.rows[0][3].value || 0) %>
 <% @budget_color = @budget_remaining > 0 ? 'green' : 'red' %>
-<% @unbudgeted_remaining = [@current_accounts.rows[2][2] - @budget_remaining.abs, 0].max%>
+<% @unbudgeted_remaining = [@current_accounts.rows[2][2].value - @budget_remaining.abs, 0].max%>
 <% @unbudgeted_color = @unbudgeted_remaining > 0 ? 'green' : 'red' %>
 <%
   payday_bench = Date.parse(ENV['LEDGER_PAYDAY_BENCHMARK'])
@@ -197,27 +197,36 @@ end
   <h1>Dashboard <small>Updated <%= @last_updated %> (<a href="/reports/budget_detail">B</a>: <span style="color: <%= @budget_color %>"><%= sprintf("$%0.2f", @budget_remaining) %></span> U: <span style="color: <%= @unbudgeted_color %>"><%= sprintf("$%0.2f", @unbudgeted_remaining) %></span>) Payday: <%= @next_payday.strftime %> (<%= @days_til_next_payday %> days)</small></h1>
 </div>
 <div class="row">
-  <div class="span8">
+  <div class="span6">
     <h3><a href="/reports/bills">Last Bills</a></h3>
-    <%= table(@last_bills, :links => {/Account/ => '/reports/register?account=:0&year=:1'}) %>
+    <%= table(@last_bills) do |t|
+          t.link /Account/ => '/reports/register?account=:this&year=:1'
+        end
+    %>
   </div>
-  <div class="span8">
+  <div class="span6">
     <h3><a href="/reports/accounts">Current Accounts</a></h3>
-    <%= table(@current_accounts, :links => {/Account/ => '/reports/register?account=:0&year=:now'}) %>
+    <%= table(@current_accounts) do |t|
+          t.link /Account/ => '/reports/register?account=:this&year=:now', :if => lambda{|c,r| c.value != "Total"}
+        end
+    %>
   </div>
 </div>
 <div class="row">
-  <div class="span8">
+  <div class="span6">
     <h3>Fund Levels</h3>
-    <%= table(@fund_levels, :links => {/Account/ => '/reports/register?account=:0&include_virtual=on'}) %>
+    <%= table(@fund_levels) do |t|
+          t.link /Account/ => '/reports/register?account=:0&include_virtual=on'
+        end
+    %>
   </div>
-  <div class="span8">
+  <div class="span6">
     <h3>Emergency Fund Longevity</h3>
     <%= table(@emergency_fund) %>
   </div>
 </div>
 <div class="row">
-  <div class="span16">
+  <div class="span12">
     <h3>Uncleared Transactions</h3>
     <%= table @uncleared %>
   </div>

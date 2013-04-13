@@ -2,7 +2,9 @@
   <h1>Budget Summary</h1>
 </div>
 <div class="row">
-  <div class="span16">
-    <%= table BudgetSummaryReport.run, :links => {/Month/ => '/reports/budget_detail?month=:0'} %>
+  <div class="span12">
+    <%= table BudgetSummaryReport.run do |t|
+          t.link /Month/ => '/reports/budget_detail?month=:this'
+        end %>
   </div>
 </div>

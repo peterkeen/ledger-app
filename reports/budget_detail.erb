@@ -35,12 +35,14 @@ order by
   <h1>Budget Detail <small><%= LedgerWeb::Report.params[:month] %> <a href="/reports/budget_detail?month=<%= @prev_month %>">prev</a> <a href="/reports/budget_detail?month=<%= @next_month %>">next</a></small></h1>
 </div>
 <div class="row">
-  <div class="span16">
+  <div class="span12">
     <%= table(@budget_summary) %>
   </div>
 </div>
 <div class="row">
-  <div class="span16">
-    <%= table @query, :links => {/Account/ => "/reports/register?account=:0&month=#{LedgerWeb::Report.params[:month]}" } %>
+  <div class="span12">
+    <%= table @query do |t|
+          t.link /Account/ => "/reports/register?account=:0&month=#{LedgerWeb::Report.params[:month]}"
+        end %>
   </div>
 </div>

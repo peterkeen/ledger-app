@@ -23,4 +23,6 @@ order by
 <div class="page-header">
   <h1>Leaky Ship</h1>
 </div>
-<%= table(@query, :links => {/\d{4}-\d{2}-\d{2}/ => '/reports/register?account=:0&year=:title'}) %>
+<%= table(@query) do |t|
+      t.link /\d\d\d\d-\d\d-\d\d/ => '/reports/register?year=:title&account=:0'
+    end %>

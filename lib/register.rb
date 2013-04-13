@@ -1,5 +1,6 @@
 class RegisterReport < LedgerWeb::Report
-  def self.run
+  def self.run()
+
     outer_where_clauses = []
     outer_where_clauses << "xtn_year = date_trunc('year', cast(:year as date))" unless params[:year].to_s == ""
     outer_where_clauses << "xtn_month = date_trunc('month', cast(:month as date))" unless params[:month].to_s == ""
@@ -11,12 +12,13 @@ class RegisterReport < LedgerWeb::Report
     inner_where_clauses << "xtn_id = :xtn_id" unless params[:xtn_id].to_s == ""
     inner_where_clauses << "not virtual" if params[:include_virtual] != "on"
     inner_where_clauses << "cleared" if params[:cleared] == "on"
+    inner_where_clauses << "cleared = false" if params[:uncleared] == "on"
 
     raise "Need either account regex or xtn_id" if inner_where_clauses.empty?
 
     inner_where_clause = inner_where_clauses.join(" and ")
 
-    from_query("""
+    query = """
       select
           xtn_id as \"Xtn\",
           xtn_date as \"Date\",
@@ -46,6 +48,8 @@ class RegisterReport < LedgerWeb::Report
        ) x
        where
           #{outer_where_clause}
-    """)
+    """
+    puts query
+    from_query(query)
   end
 end

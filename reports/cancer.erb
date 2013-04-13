@@ -100,15 +100,19 @@
   <h1>Cancer Treatment <small>Today is day <%= @day %></small></h1>
 </div>
 <div class="row">
-  <div class="span8">
-    <%= table @expenses %>
+  <div class="span6">
+    <%= table @expenses do |t|
+          t.link /Expense/ => '/reports/register?account=Cancer:Expenses::this'
+        end %>
   </div>
-  <div class="span8">
+  <div class="span6">
     <%= table @payments %>
   </div>
 </div>
 <div class="row">
-  <div class="span16">
-    <%= table @claims, :links => {/ClaimNum/ => '/files/eobs/:1.pdf'} %>
+  <div class="span12">
+    <%= table @claims do |t|
+          t.link /ClaimNum/ => '/files/eobs/:1.pdf'
+        end %>
   </div>
 </div>
