@@ -16,6 +16,8 @@ set :user,        "peter"
 set :app_user,    "ledger-web"
 set :concurrency, "web=1"
 set :base_port,   6500
+set :use_ssl, true
+set :force_ssl, true
 
 read_env 'prod'
 

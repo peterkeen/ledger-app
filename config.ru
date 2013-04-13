@@ -1,6 +1,5 @@
 require 'rubygems'
 require 'ledger_web'
-require 'rack/ssl'
 
 LedgerWeb::Config.instance.load_user_config(File.dirname(__FILE__))
 LedgerWeb::Database.connect
@@ -14,8 +13,6 @@ ledger = LedgerWeb::Application.new
 protected_ledger = Rack::Auth::Basic.new(ledger, "Ledger") do |username, password|
   username == ENV['LEDGER_USERNAME'] && password == ENV['LEDGER_PASSWORD']
 end
-
-use Rack::SSL
 
 run Rack::URLMap.new \
   '/' => protected_ledger,
