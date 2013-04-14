@@ -14,6 +14,8 @@ order by
 </div>
 <div class="row">
   <div class="span12">
-    <%= table(@query, :links => {/Account/ => '/reports/register?account=:0'}) %>
+    <%= table(@query) do |t|
+          t.link /Account/ => '/reports/register?account=:0'
+        end %>
   </div>
 </div>
