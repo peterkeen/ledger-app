@@ -229,7 +229,7 @@ from (
   <div class="span6">
     <h3>Fund Levels</h3>
     <%= table(@fund_levels) do |t|
-          t.link /Account/ => '/reports/register?account=:0&include_virtual=on'
+          t.link /Account/ => '/reports/register?account=:0&include_virtual=on&cleared='
         end
     %>
   </div>
@@ -237,7 +237,9 @@ from (
     <h3>Emergency Fund Longevity</h3>
     <%= table(@emergency_fund) %>
     <h3>Goals</h3>
-    <%= table(@goals) %>
+    <%= table(@goals) do |t|
+          t.link /^Goal$/ => '/reports/register?account=:this&week=:now'
+        end %>
   </div>
 </div>
 <div class="row">
