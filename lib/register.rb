@@ -4,6 +4,7 @@ class RegisterReport < LedgerWeb::Report
     outer_where_clauses = []
     outer_where_clauses << "xtn_year = date_trunc('year', cast(:year as date))" unless params[:year].to_s == ""
     outer_where_clauses << "xtn_month = date_trunc('month', cast(:month as date))" unless params[:month].to_s == ""
+    outer_where_clauses << "date_trunc('week', xtn_date) = date_trunc('week', cast(:week as date))" unless params[:week].to_s == ""
 
     outer_where_clause = (outer_where_clauses.empty? ? ['1 = 1'] : outer_where_clauses).join(" and ")
 
@@ -49,7 +50,6 @@ class RegisterReport < LedgerWeb::Report
        where
           #{outer_where_clause}
     """
-    puts query
     from_query(query)
   end
 end
