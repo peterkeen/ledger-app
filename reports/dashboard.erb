@@ -220,7 +220,7 @@ from (
   <div class="span6">
     <h3><a href="/reports/accounts">Current Accounts</a></h3>
     <%= table(@current_accounts) do |t|
-          t.link /Account/ => '/reports/register?account=:this&year=:now', :if => lambda{|c,r| c.value != "Total"}
+          t.link /Account/ => '/reports/register?account=:this&year=:now&cleared=', :if => lambda{|c,r| c.value != "Total"}
         end
     %>
   </div>
@@ -245,6 +245,9 @@ from (
 <div class="row">
   <div class="span12">
     <h3>Uncleared Transactions</h3>
-    <%= table @uncleared %>
+    <%= table @uncleared do |t|
+          t.link /Payee/ => '/reports/register?payee=:this&month=:now&cleared='
+          t.link /Account/ => '/reports/register?account=:this&month=:now&cleared='
+        end %>
   </div>
 </div>
