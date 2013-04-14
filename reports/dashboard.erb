@@ -192,6 +192,19 @@ end
   @next_payday = payday_bench + (((Date.today() - payday_bench).to_f / 14.0).ceil * 14)
   @days_til_next_payday = (@next_payday - Date.today()).to_f.ceil
 %>
+<% @goals = query do %>
+select
+    goal as "Goal",
+    goal_amount as "Goal Amount",
+    spent_amount as "Spent",
+    goal_amount - spent_amount as "Left"
+from (
+    select
+        'Food' as goal,
+        (select sum(amount) / 4 from budget_months where account ~* 'Expenses:Food:(Breakfast|Lunch|Dinner)' and xtn_month = (select max(xtn_month) from budget_months)) as goal_amount,
+        (select sum(amount) from expenses where account ~* 'Expenses:Food:(Breakfast|Lunch|Dinner)' and date_trunc('week', xtn_date) = (select max(date_trunc('week', xtn_date)) from expenses)) as spent_amount
+    ) x
+<% end %>
 
 <div class="page-header">
   <h1>Dashboard <small>Updated <%= @last_updated %> (<a href="/reports/budget_detail">B</a>: <span style="color: <%= @budget_color %>"><%= sprintf("$%0.2f", @budget_remaining) %></span> U: <span style="color: <%= @unbudgeted_color %>"><%= sprintf("$%0.2f", @unbudgeted_remaining) %></span>) Payday: <%= @next_payday.strftime %> (<%= @days_til_next_payday %> days)</small></h1>
@@ -223,6 +236,8 @@ end
   <div class="span6">
     <h3>Emergency Fund Longevity</h3>
     <%= table(@emergency_fund) %>
+    <h3>Goals</h3>
+    <%= table(@goals) %>
   </div>
 </div>
 <div class="row">
