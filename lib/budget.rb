@@ -25,6 +25,7 @@ class BudgetSummaryReport < LedgerWeb::Report
               xtn_month,
               account
       ) x on x.account = b.account and x.xtn_month = b.xtn_month
+      where b.amount > 0
       order by
          b.xtn_month,
          x.account

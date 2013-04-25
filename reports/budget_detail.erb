@@ -6,7 +6,7 @@ select
     coalesce(x.amount, 0) as "Spent",
     b.amount - coalesce(x.amount, 0) as "Diff"
 from
-(select * from budget_months where xtn_month = :month) b
+(select * from budget_months where xtn_month = :month and amount > 0) b
 left outer join (
     select
         xtn_month,
