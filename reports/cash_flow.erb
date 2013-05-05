@@ -76,6 +76,7 @@ with budgeted_accounts as (
         budget_months
     where
         xtn_month = date_trunc('month', cast(:month as date))
+        and amount > 0
 ), x as (select
     case
     when account ~ 'Expenses' and account in (select account from budgeted_accounts) then 'Expenses - Budgeted'
