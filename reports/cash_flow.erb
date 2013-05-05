@@ -1,135 +1,132 @@
-<% @report = query do %>
-with
-net_income as (select
-    xtn_month,
-    sum(amount) as amount
-from
-    ledger
-where
-    account ~ 'Checking'
-    and xtn_id in (select xtn_id from ledger where account ~ 'Income:Salary')
-group by
-    xtn_month
-),
-ordinary_expenses as (select
-    xtn_month,
-    account,    
-    sum(amount) as amount
-from
-    ledger
-where
-    account ~ '^Expenses'
-    and account !~ 'Depreciation'
-    and account !~ 'Taxes'
-    and account !~ 'Interest'
-    and account !~ 'Insurance'
-    and not virtual
-    and xtn_id in (select xtn_id from ledger where account ~ 'Checking')
-group by
-    xtn_month,
-    account
-),
-budgeted_expenses as (select
-    xtn_month,
-    sum(amount) as amount
-from
-    ordinary_expenses
-where
-    account in (
-      'Expenses:Food',
-      'Expenses:Food:Lunch',
-      'Expenses:Food:Dinner',
-      'Expenses:Food:Breakfast',
-      'Expenses:Food:Groceries',
-      'Expenses:Entertainment',
-      'Expenses:Fuel',
-      'Expenses:Rent',
-      'Expenses:Utils:Gas',
-      'Expenses:Utils:Electric',
-      'Expenses:Cable',
-      'Expenses:Cell Phone',
-      'Expenses:Utils:Water',
-      'Expenses:Gym'
-    )
-group by
-    xtn_month
-),
-unbudgeted_expenses as (select
-    xtn_month,
-    sum(amount) as amount
-from
-    ordinary_expenses
-where
-    account not in (
-      'Expenses:Food',
-      'Expenses:Food:Lunch',
-      'Expenses:Food:Dinner',
-      'Expenses:Food:Breakfast',
-      'Expenses:Food:Groceries',
-      'Expenses:Entertainment',
-      'Expenses:Fuel',
-      'Expenses:Rent',
-      'Expenses:Utils:Gas',
-      'Expenses:Utils:Electric',
-      'Expenses:Cable',
-      'Expenses:Cell Phone',
-      'Expenses:Utils:Water',
-      'Expenses:Gym'
-    )
-group by
-    xtn_month
-),
-savings as (select
-    xtn_month,
-    sum(amount) as amount
-from
-    ledger
-where
-    account ~ 'Assets:Funds'
-    and account !~ 'Assets:Funds:Bonus:Taxes'
-group by
-    xtn_month
-),
-debt as (select
-    xtn_month,
-    sum(amount) as amount
-from
-    ledger
-where
-    note ~ 'Payment'
-    and account ~ 'Liabilities:Amex'
-group by
-    xtn_month
-),
-months as (select xtn_month from accounts_months group by xtn_month)
-select
-    xtn_month as "Month",
-    net_income as "Net Income",
-    budgeted as "Ordinary",
-    unbudgeted as "Onetime",
-    savings as "Savings",
-    debt as "Debt",
-    net_income - budgeted - unbudgeted - savings - debt as "Cash Flow"
-from (
-    select
-        xtn_month,
-        coalesce(net_income.amount, 0) as net_income,
-        coalesce(budgeted_expenses.amount, 0) as budgeted,
-        coalesce(unbudgeted_expenses.amount, 0) as unbudgeted,
-        coalesce(savings.amount, 0.00) as savings,
-        coalesce(debt.amount, 0.00) as debt
-    from
-        months
-        left outer join net_income using (xtn_month)
-        left outer join budgeted_expenses using (xtn_month)
-        left outer join unbudgeted_expenses using (xtn_month)
-        left outer join savings using (xtn_month)
-        left outer join debt using (xtn_month)
-    order by
-        xtn_month desc
-) x
+<% default 'month', Date.today %>
+<% @cash = query do %>
+  with starting_cash as (
+      select
+          sum(amount) as amount
+      from
+          ledger
+      where
+          account = 'Assets:Schwab:Checking'
+          and cleared
+          and not virtual
+          and xtn_date < date_trunc('month', cast(:month as date))
+  ), ending_cash as (
+      select
+          sum(amount) as amount
+      from
+          ledger
+      where
+          account = 'Assets:Schwab:Checking'
+          and cleared
+          and not virtual
+          and xtn_date < date_trunc('month', cast(:month as date)) + '1 month'::interval
+   ) select
+       starting_cash.amount as "Starting Cash",
+       ending_cash.amount as "Ending Cash",
+       ending_cash.amount - starting_cash.amount as "Net Cash"
+   from
+       starting_cash,
+       ending_cash
 <% end %>
-<div class="page-title">
-  <h1>Cash Flow</h1>
+
+<% @inflows = query do %>
+  with inflows as (
+  select
+     account,
+     abs(sum(amount)) as amount
+  from
+     ledger
+  where
+     (
+         account ~ '^Income'
+         or (
+             account = 'Liabilities:Amex'
+             and xtn_id in (select xtn_id from expenses)
+         )
+         or (account ~ 'Assets:Receivable' and note ~ 'Deposit')
+     )
+     and cleared
+     and not virtual
+     and xtn_month = date_trunc('month', cast(:month as date))
+  group by
+     account
+  order by
+     account
+  ) select
+     account as "Account",
+     amount as "Amount"
+  from
+     inflows
+  union all
+  select
+     'Total' as "Account",
+     sum(amount) as "Amount"
+  from
+     inflows
+<% end %>
+
+<% @outflows = query do %>
+with budgeted_accounts as (
+    select
+        account
+    from
+        budget_months
+    where
+        xtn_month = date_trunc('month', cast(:month as date))
+), x as (select
+    account,
+    round(abs(sum(amount)), 2) as amount
+from
+    ledger
+where
+    xtn_month = date_trunc('month', cast(:month as date))
+    and cleared
+    and not virtual
+    and commodity = '$'
+    and (
+      account ~ '^Expenses'
+      or (account ~ 'Assets:Receivable' and xtn_id in (select xtn_id from expenses))
+      or (account ~ 'Liabilities:Amex' and note ~ 'Payment')
+      or (account ~* 'Assets:(Amex|401k|Vanguard)')
+    )
+group by
+    account
+) select * from (select
+    account as "Account",
+    sum(amount) as "Amount"
+from
+    x
+group by
+    account
+order by
+    account
+) y
+union all
+select
+    'Total' as "Account",
+    sum(amount) as "Amount"
+from
+    x
+<% end %>
+<div class="row">
+  <div class="span12">
+    <%= table(@cash) %>
+  </div>
 </div>
-<%= table(@report) %>
+<div class="row">
+  <div class="span6">
+    <h2>Inflows</h2>
+    <%= @inflows.error %>
+    <%= table(@inflows) %>
+  </div>
+  <div class="span6">
+    <h2>Outflows</h2>
+    <%= @outflows.error %>
+    <%= table(@outflows) %>
+  </div>
+</div>
+<div class="row">
+  <div class="span12">
+    <p>Error: <%= sprintf("%0.2f", @inflows.rows[-1][-1].value) %> - <%= sprintf("%0.2f", @outflows.rows[-1][-1].value) %> - <%= sprintf("%0.2f", @cash.rows[-1][-1].value) %> = <%= sprintf("%0.2f", @inflows.rows[-1][-1].value - @outflows.rows[-1][-1].value - @cash.rows[-1][-1].value) %></p>
+  </div>
+</div>
