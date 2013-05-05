@@ -1,4 +1,7 @@
 <% default 'month', Date.today %>
+<% @months = query do %>
+  select xtn_month from accounts_months group by xtn_month order by xtn_month desc
+<% end %>
 <% @cash = query do %>
   with starting_cash as (
       select
@@ -74,7 +77,14 @@ with budgeted_accounts as (
     where
         xtn_month = date_trunc('month', cast(:month as date))
 ), x as (select
-    account,
+    case
+    when account ~ 'Expenses' and account in (select account from budgeted_accounts) then 'Expenses - Budgeted'
+    when account ~ 'Expenses' and account not in (select account from budgeted_accounts) and account !~ 'Taxes' then 'Expenses - Unbudgeted'
+    when account ~ 'Taxes' then 'Taxes'
+    when account ~ 'Assets' and account !~ 'Emily' then 'Savings'
+    when account ~ 'Liabilities' then 'Debt Servicing'
+    else account
+    end as account,
     round(abs(sum(amount)), 2) as amount
 from
     ledger
@@ -108,6 +118,23 @@ select
 from
     x
 <% end %>
+<div class="page-header">
+  <h1>Cash Flow</h1>
+</div>
+<div class="row">
+  <div class="span12">
+  <form class="form form-inline">
+    <select name="month" class="input-medium">
+      <% @selected_month = params[:month].to_s == "" ? nil : Date.parse(params[:month]).to_s%>
+      <option value="">Month</option>
+      <% @months.each do |row| %>
+      <option value="<%= row[0].value %>" <%= (@selected_month == row[0].value.to_s) ? "selected" : "" %>><%= row[0].value.to_s %></option>
+      <% end %>
+    </select>
+    <input type="submit" value="Update" class="btn">
+  </form>
+  </div>
+</div>
 <div class="row">
   <div class="span12">
     <%= table(@cash) %>
