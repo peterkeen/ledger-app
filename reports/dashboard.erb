@@ -1,6 +1,6 @@
 <% @last_bills = query do %>
   select
-    account as "Account",
+    replace(account, 'Expenses:', '') as "Account",
     xtn_date as "Last Paid",
     amount as "Amount"
   from
@@ -126,7 +126,7 @@
 
 <% @fund_levels = query do %>
  select
-     account as "Account",
+     replace(account, 'Assets:Funds:', '') as "Account",
      sum(amount) as "Balance"
  from
      ledger
@@ -213,7 +213,8 @@ from (
   <div class="span6">
     <h3><a href="/reports/bills">Last Bills</a></h3>
     <%= table(@last_bills) do |t|
-          t.link /Account/ => '/reports/register?account=:this&year=:1'
+          t.link /Account/ => '/reports/register?account=Expenses::this&year=:1'
+          t.decorate /Last Paid/ => TextColorDecorator.new('red'), :if => lambda { |c,r| c.value.strftime('%Y%m') != Date.today.strftime('%Y%m') }
         end
     %>
   </div>
@@ -229,13 +230,16 @@ from (
   <div class="span6">
     <h3>Fund Levels</h3>
     <%= table(@fund_levels) do |t|
-          t.link /Account/ => '/reports/register?account=:0&include_virtual=on&cleared='
+          t.link /Account/ => '/reports/register?account=Assets:Funds::0$&include_virtual=on&cleared='
+          t.decorate /Balance/ => TextColorDecorator.new('red'), :if => lambda { |c,r| c.value < 0 }
         end
     %>
   </div>
   <div class="span6">
     <h3>Emergency Fund Longevity</h3>
-    <%= table(@emergency_fund) %>
+    <%= table(@emergency_fund) do |t|
+          t.decorate /(Months|Needed)/ => TextColorDecorator.new('red'), :if => lambda { |c,r| r[3].value > 0 }
+        end %>
     <h3>Goals</h3>
     <%= table(@goals) do |t|
           t.link /^Goal$/ => '/reports/register?account=:this&week=:now'
