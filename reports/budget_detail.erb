@@ -1,7 +1,7 @@
 <% default 'month', Date.today.strftime('%Y-%m-01') %>
 <% @query = query do %>
 select
-    b.account as "Account",
+    replace(b.account, 'Expenses:', '') as "Account",
     b.amount as "Budget",
     coalesce(x.amount, 0) as "Spent",
     b.amount - coalesce(x.amount, 0) as "Diff"
@@ -42,7 +42,8 @@ order by
 <div class="row">
   <div class="span12">
     <%= table @query do |t|
-          t.link /Account/ => "/reports/register?account=:0&month=#{LedgerWeb::Report.params[:month]}"
+          t.link /Account/ => "/reports/register?account=Expenses::0&month=#{LedgerWeb::Report.params[:month]}"
+          t.decorate /Diff/ => TextColorDecorator.new('red'), :if => lambda { |c,r| c.value < 0 }
         end %>
   </div>
 </div>
