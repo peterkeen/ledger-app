@@ -132,6 +132,7 @@
      ledger
  where
      account ~ 'Assets:Funds'
+     and account !~ 'Assets:Funds:Emergency'
  group by
      account
  having
@@ -236,9 +237,9 @@ from (
     %>
   </div>
   <div class="span6">
-    <h3>Emergency Fund Longevity</h3>
+    <h3><a href="/reports/register?account=Assets:Funds:Emergency&include_virtual=on&cleared=">Emergency Fund Longevity</a></h3>
     <%= table(@emergency_fund) do |t|
-          t.decorate /(Months|Needed)/ => TextColorDecorator.new('red'), :if => lambda { |c,r| r[3].value > 0 }
+          t.decorate /(Months|Needed)/ => TextColorDecorator.new('red'), :if => lambda { |c,r| r[3].value > 0.000001 }
         end %>
     <h3>Goals</h3>
     <%= table(@goals) do |t|
