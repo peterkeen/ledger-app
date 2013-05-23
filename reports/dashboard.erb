@@ -39,7 +39,7 @@
  from
      ledger
  where
-     account in ('Assets:Schwab:Checking', 'Liabilities:Amex')
+     account in ('Assets:Schwab:Checking', 'Liabilities:Amex', 'Liabilities:Chase:SP')
      and xtn_date <= :to
  group by
      account
@@ -152,7 +152,7 @@
  where
      not cleared
      and xtn_date <= :to
-     and account in ('Assets:Schwab:Checking', 'Liabilities:Amex')
+     and account in ('Assets:Schwab:Checking', 'Liabilities:Amex', 'Liabilities:Chase:SP')
  order by
      xtn_date,
      account,
@@ -204,6 +204,11 @@ from (
         'Food' as goal,
         (select sum(amount) / 4 from budget_months where account ~* 'Expenses:Food:(Breakfast|Lunch|Dinner)' and xtn_month = (select max(xtn_month) from budget_months)) as goal_amount,
         (select sum(amount) from expenses where account ~* 'Expenses:Food:(Breakfast|Lunch|Dinner)' and date_trunc('week', xtn_date) = (select max(date_trunc('week', xtn_date)) from expenses)) as spent_amount
+    union all
+    select
+        'Sapphire Spending' as goal,
+        3000 as goal_amount,
+        coalesce((select sum(amount) from ledger where account ~ 'Liabilities:Chase:SP' and amount < 0),0) as spent_amount
     ) x
 <% end %>
 
@@ -242,6 +247,7 @@ from (
           t.decorate /(Months|Needed)/ => TextColorDecorator.new('red'), :if => lambda { |c,r| r[3].value > 0.000001 }
         end %>
     <h3>Goals</h3>
+    <%= @goals.error %>
     <%= table(@goals) do |t|
           t.link /^Goal$/ => '/reports/register?account=:this&week=:now'
         end %>
