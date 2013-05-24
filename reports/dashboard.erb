@@ -206,7 +206,7 @@ from (
         (select sum(amount) from expenses where account ~* 'Expenses:Food:(Breakfast|Lunch|Dinner)' and date_trunc('week', xtn_date) = (select max(date_trunc('week', xtn_date)) from expenses)) as spent_amount
     union all
     select
-        'Sapphire Spending' as goal,
+        'Liabilities:Chase:SP' as goal,
         3000 as goal_amount,
         abs(coalesce((select sum(amount) from ledger where account ~ 'Liabilities:Chase:SP' and amount < 0),0)) as spent_amount
     ) x
