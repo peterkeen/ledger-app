@@ -186,7 +186,7 @@ end
 <% @budget = BudgetSummaryReport.run %>
 <% @budget_remaining = (@budget.rows[0][3].value || 0) %>
 <% @budget_color = @budget_remaining > 0 ? 'green' : 'red' %>
-<% @unbudgeted_remaining = [@current_accounts.rows[2][2].value - @budget_remaining.abs, 0].max%>
+<% @unbudgeted_remaining = [@current_accounts.rows[-1][2].value - @budget_remaining.abs, 0].max%>
 <% @unbudgeted_color = @unbudgeted_remaining > 0 ? 'green' : 'red' %>
 <%
   payday_bench = Date.parse(ENV['LEDGER_PAYDAY_BENCHMARK'])
