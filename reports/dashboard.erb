@@ -208,7 +208,7 @@ from (
     select
         'Sapphire Spending' as goal,
         3000 as goal_amount,
-        coalesce((select sum(amount) from ledger where account ~ 'Liabilities:Chase:SP' and amount < 0),0) as spent_amount
+        abs(coalesce((select sum(amount) from ledger where account ~ 'Liabilities:Chase:SP' and amount < 0),0)) as spent_amount
     ) x
 <% end %>
 
