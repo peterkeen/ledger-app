@@ -113,6 +113,7 @@
              and account !~ 'Travel'
              and account !~ 'Computers'
              and not virtual
+             and tags !~ 'Emergency'
          group by
              xtn_month
          order by
