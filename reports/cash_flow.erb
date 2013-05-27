@@ -43,7 +43,7 @@
      (
          account ~ '^Income'
          or (
-             account = 'Liabilities:Amex'
+             account in ('Liabilities:Amex', 'Liabilties:Chase:SP')
              and xtn_id in (select xtn_id from expenses)
          )
          or (account ~ 'Assets:Receivable' and note ~ 'Deposit')
@@ -97,7 +97,7 @@ where
     and (
       account ~ '^Expenses'
       or (account ~ 'Assets:Receivable' and xtn_id in (select xtn_id from expenses))
-      or (account ~ 'Liabilities:Amex' and note ~ 'Payment')
+      or (account ~ 'Liabilities:(Amex|Chase:SP)' and note ~ 'Payment')
       or (account ~* 'Assets:(Amex|401k|Vanguard)')
     )
 group by
