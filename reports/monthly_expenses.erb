@@ -1,0 +1,38 @@
+<% @expenses = query do %>
+  select
+      xtn_month as "Month",
+      amount as "Amount",
+      avg_amount as "Avg. Amount"
+  from (
+      select
+          xtn_month,
+          amount,
+          avg(amount) over (rows 12 preceding) as avg_amount
+      from (
+          select
+              xtn_month,
+              sum(amount) as amount
+          from
+              ledger
+          where
+              account ~ '^Expenses'
+              and account !~ 'Depreciation'
+              and account !~ 'Taxes'
+              and account !~ 'Interest'
+              and account !~ 'Insurance'
+              and account !~ 'Travel'
+              and account !~ 'Computers'
+              and account !~ 'Medical'
+              and not virtual
+              and tags !~ 'Emergency'
+          group by
+              xtn_month
+          order by
+              xtn_month
+      ) x
+  ) x
+  order by xtn_month desc;
+<% end %>
+<%= table @expenses do |t|
+      t.link /Month/ => '/reports/monthly_expenses_detail?month=:this'
+    end %>

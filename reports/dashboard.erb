@@ -112,6 +112,7 @@
              and account !~ 'Insurance'
              and account !~ 'Travel'
              and account !~ 'Computers'
+             and account !~ 'Medical'
              and not virtual
              and tags !~ 'Emergency'
          group by
@@ -246,6 +247,7 @@ from (
     <h3><a href="/reports/register?account=Assets:Funds:Emergency&include_virtual=on&cleared=">Emergency Fund Longevity</a></h3>
     <%= table(@emergency_fund) do |t|
           t.decorate /(Months|Needed)/ => TextColorDecorator.new('red'), :if => lambda { |c,r| r[3].value > 0.000001 }
+          t.link /Trailing 12 Month/ => '/reports/monthly_expenses'
         end %>
     <h3>Goals</h3>
     <%= @goals.error %>
