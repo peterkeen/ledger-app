@@ -222,7 +222,7 @@ from (
     <h3><a href="/reports/bills">Last Bills</a></h3>
     <%= table(@last_bills) do |t|
           t.link /Account/ => '/reports/register?account=Expenses::this&year=:1'
-          t.decorate /Last Paid/ => TextColorDecorator.new('red'), :if => lambda { |c,r| c.value.strftime('%Y%m') != Date.today.strftime('%Y%m') }
+          t.decorate /Last Paid/ => TextColorDecorator.new('red'), :if => lambda { |c,r| c.value + 25 <= Date.today }
         end
     %>
   </div>
