@@ -212,9 +212,9 @@ from (
         (select sum(amount) from expenses where account ~* 'Expenses:Food:(Breakfast|Lunch|Dinner)' and date_trunc('week', xtn_date) = (select max(date_trunc('week', xtn_date)) from expenses)) as spent_amount
     union all
     select
-        'Liabilities:Chase:SP' as goal,
-        3000 as goal_amount,
-        abs(coalesce((select sum(amount) from ledger where account ~ 'Liabilities:Chase:SP' and amount < 0),0)) as spent_amount
+        'COBRA Months' as goal,
+        18 as goal_amount,
+        (select sum(amount) / 1378.65 from ledger where account ~ 'Medical' and virtual) as spent_amount
     ) x
 <% end %>
 
