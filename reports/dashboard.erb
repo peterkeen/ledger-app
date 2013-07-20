@@ -76,9 +76,10 @@
      from (
          select
              xtn_month,
-             last_value(emergency_fund) over (partition by xtn_month) as emergency_fund
+             last_value(emergency_fund) over (partition by xtn_month order by xtn_id) as emergency_fund
          from (
              select
+                 xtn_id,
                  xtn_month,
                  sum(amount) over (rows unbounded preceding) as emergency_fund
              from
@@ -249,6 +250,7 @@ from (
   </div>
   <div class="span6">
     <h3><a href="/reports/register?account=Assets:Funds:Emergency&include_virtual=on&cleared=">Emergency Fund Longevity</a></h3>
+    <%= @emergency_fund.error %>
     <%= table(@emergency_fund) do |t|
           t.decorate /(Months|Needed)/ => TextColorDecorator.new('red'), :if => lambda { |c,r| r[3].value > 0.000001 }
           t.link /Trailing 12 Month/ => '/reports/monthly_expenses'
