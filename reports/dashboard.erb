@@ -72,7 +72,7 @@
  from (
      select
          xtn_month,
-         max(emergency_fund) as emergency_fund
+         last(emergency_fund) as emergency_fund
      from (
          select
              xtn_month,
