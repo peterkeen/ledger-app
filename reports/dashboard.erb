@@ -195,6 +195,11 @@ from (
         'COBRA 18 Months' as goal,
         1378.65 * 18 as goal_amount,
         (select sum(amount) from ledger where account ~ 'Medical' and virtual) as spent_amount
+    union all
+    select
+        'Car Loan' as goal,
+        0 as goal_amount,
+        (select abs(sum(amount)) from ledger where account = 'Liabilities:Mazda') as spent_amount
     ) x
 <% end %>
 
