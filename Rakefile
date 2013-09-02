@@ -21,5 +21,5 @@ task :migrate => :load_config do
 end
 
 task :server do
-  sh "env DATABASE_URL=postgres://ledger@192.168.1.14/ledger LEDGER_USERNAME=admin LEDGER_PASSWORD=foo LEDGER_PAYDAY_BENCHMARK=2013-01-18 EMERGENCY_FUND_TARGET=4 rackup"
+  sh "env DATABASE_URL=postgres://ledger@192.168.1.14/ledger LEDGER_USERNAME=admin LEDGER_PASSWORD=foo LEDGER_PAYDAY_BENCHMARK=2013-01-18 EMERGENCY_FUND_TARGET=4 rackup -p 9595"
 end
