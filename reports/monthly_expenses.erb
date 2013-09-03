@@ -16,16 +16,7 @@
               ledger
           where
               account ~ '^Expenses'
-              and account !~ 'Depreciation'
-              and account !~ 'Taxes'
-              and account !~ 'Interest'
-              and account !~ 'Insurance'
-              and account !~ 'Travel'
-              and account !~ 'Computers'
-              and account !~ 'Medical'
-              and account !~ 'Bike'
-              and account !~ 'Wedding'
-              and account !~ 'Furniture'
+              and account !~ '(Depreciation|Taxes|Interest|Insurance|Travel|Computers|Medical|Bike|Wedding|Furniture|Stripe|Car|Moving)'
               and not virtual
               and tags !~ 'Emergency'
           group by
