@@ -187,7 +187,7 @@ from (
         (select sum(amount) from ledger where account ~ 'Medical' and virtual) as spent_amount
     union all
     select
-        'Car Loan' as goal,
+        'Liabilities:Mazda' as goal,
         0 as goal_amount,
         (select abs(sum(amount)) from ledger where account = 'Liabilities:Mazda') as spent_amount
     ) x
