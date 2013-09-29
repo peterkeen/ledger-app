@@ -112,7 +112,7 @@
  group by
      account
  having
-     sum(amount) != 0
+     round(sum(amount)) != 0
  order by
      account
 <% end %>
