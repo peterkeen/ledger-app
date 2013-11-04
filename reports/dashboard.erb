@@ -15,6 +15,7 @@
       where
         account ~ 'Expenses:(Utils|Cable|Rent)'
         and account != 'Expenses:Utils:Water'
+        and account !~ ':Fees'
         and xtn_date <= :to
       group by
         account
