@@ -30,6 +30,8 @@ task :build_sales_transfers => :load_config do
     '[Assets:Funds:Car]' =>       0.3
   }
 
+  last_transfer = nil
+
   LedgerWeb::Database.handle.fetch("select max(xtn_date) as last_transfer from ledger where account = 'Assets:Sales:Checking' and amount < 0") do |row|
     last_transfer = row[:last_transfer] || Date.new(2013,9,29)
   end
