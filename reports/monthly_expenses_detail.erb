@@ -1,4 +1,4 @@
-<% @expenses = RegisterReport.run(inner_where_clauses: ["account ~ '^Expenses'", "account !~ '(Depreciation|Taxes|Interest|Insurance|Travel|Computers|Medical|Bike|Wedding|Furniture|Stripe|Car|Moving)'", "tags !~ 'Emergency'"]) %>
+<% @expenses = RegisterReport.run(inner_where_clauses: ["account ~ '^Expenses'", "account !~ '(Depreciation|Taxes|Interest|Insurance|Travel|Computers|Medical|Bike|Wedding|Furniture|Stripe|Car|Moving|Sales)'", "tags !~ 'Emergency'"]) %>
 <%= table @expenses do |t| 
       t.decorate :all => LedgerWeb::Decorators::HighlightDecorator.new('#d9edf7'), :if => lambda{|c,r| !r[5].value }
       t.decorate /Xtn/ => LedgerWeb::Decorators::IconDecorator.new('chevron-right')

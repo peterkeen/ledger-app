@@ -89,7 +89,7 @@
              ledger
          where
              account ~ '^Expenses'
-             and account !~ '(Depreciation|Taxes|Interest|Insurance|Travel|Computers|Medical|Bike|Wedding|Furniture|Stripe|Car|Moving)'
+             and account !~ '(Depreciation|Taxes|Interest|Insurance|Travel|Computers|Medical|Bike|Wedding|Furniture|Stripe|Car|Moving|Sales)'
              and tags !~ 'Emergency'
              and xtn_month != date_trunc('month', now())::date
          group by
