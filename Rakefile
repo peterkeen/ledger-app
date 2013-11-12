@@ -5,6 +5,13 @@ require 'ledger_web'
 
 task :default => [:load]
 
+task :env do
+  File.open('.env.prod').each do |line|
+    key,val = line.strip.split('=', 2)
+    ENV[key] = val
+  end
+end
+
 task :load_config do
   LedgerWeb::Config.instance.load_user_config(File.dirname(__FILE__))
   LedgerWeb::Database.connect
@@ -63,4 +70,73 @@ task :build_sales_transfers => :load_config do
 
   puts xfer_rows.join("\n") + "\n"
 
+end
+
+# chase: bundle exec rake env reconcile fields=xtn_type:text,xtn_date:date,post_date:date,note:text,amount:numeric file=~/downloads/chase.csv account='Liabilities:Chase:SP' skip_first=true
+# amex: bundle exec rake env reconcile fields=xtn_date:date,description:text,amount:numeric,note:text,address:text file=~/downloads/ofx.csv account='Liabilities:Amex' slop=2
+
+task :reconcile => :load_config do
+  fields = ENV['fields']
+  h = LedgerWeb::Database.handle
+  database_fields = fields.split(/,/).map do |field|
+    field.split(/:/)
+  end
+
+  field_sql = database_fields.map { |f| f.join(' ') }.join(', ')
+  h.run("create temporary table reconcile (#{field_sql})")
+
+  line_num = 0
+
+  CSV.foreach(ENV['file']) do |line|
+    line_num += 1    
+    next if line_num == 1 && ENV['skip_first']
+    h[:reconcile].insert(line)
+  end
+
+
+  account = ENV['account']
+  slop = (ENV['slop'] || 0).to_i
+
+  puts "Checking for entries in reconcile not in ledger"
+
+  h.fetch('select * from reconcile order by xtn_date') do |r|
+    amount = r[:amount].to_f.round(2)
+    start_date = r[:xtn_date] - slop
+    end_date = r[:xtn_date] + slop
+
+    query = "select count(1) from ledger where cleared and amount = #{amount} and account = '#{account}' and xtn_date between '#{start_date}' and '#{end_date}'"
+
+    h.fetch(query) do |l|
+      next unless l[:count] == 0
+
+      amount = r[:amount].to_f.round(2)
+      note = r[:note]
+      date = r[:xtn_date]
+
+      puts "#{date} #{note}    #{amount}    #{l[:count]}"
+    end
+
+  end
+
+  dates = h.fetch('select min(xtn_date), max(xtn_date) from reconcile')
+
+  puts "Checking for entries in ledger not in reconcile"
+
+  h.fetch('select * from ledger where cleared and xtn_date between ? and ? and account = ? order by xtn_date', dates.first[:min], dates.first[:max], account) do |r|
+    amount = r[:amount].to_f.round(2)
+    start_date = r[:xtn_date] - slop
+    end_date = r[:xtn_date] + slop
+
+    query = "select count(1) from reconcile where amount = #{amount} and xtn_date between '#{start_date}' and '#{end_date}'"
+
+    h.fetch(query) do |l|
+      next unless l[:count] == 0
+      amount = r[:amount].to_f.round(2)
+      note = r[:note]
+      date = r[:xtn_date]
+
+      puts "#{date} #{note}    #{amount}    #{l[:count]}"
+    end
+    
+  end
 end
