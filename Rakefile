@@ -39,19 +39,21 @@ task :build_sales_transfers => :load_config do
 
   last_transfer = nil
 
-  LedgerWeb::Database.handle.fetch("select max(xtn_date) as last_transfer from ledger where account = 'Assets:Sales:Checking' and amount < 0") do |row|
+  LedgerWeb::Database.handle.fetch("select max(xtn_date) as last_transfer from ledger where account = 'Assets:Sales:Checking' and amount < 0 and tags !~ 'refund'") do |row|
     last_transfer = row[:last_transfer] || Date.new(2013,9,29)
   end
 
+  STDERR.puts "Last transfer: #{last_transfer}"
+
   total_amount = 0
 
-  LedgerWeb::Database.handle.fetch("select sum(amount) as amount from ledger where account = 'Assets:Sales:Checking' and amount > 0 and tags ~ 'sales: true'") do |row|
+  LedgerWeb::Database.handle.fetch("select sum(amount) as amount from ledger where account = 'Assets:Sales:Checking' and amount > 0 and tags ~ 'sales: true' and xtn_date > '#{last_transfer}'") do |row|
     total_amount = row[:amount]
   end
 
   today = Date.today.strftime('%Y/%m/%d')
 
-  xfer_amount = total_amount * RATIOS.inject(0) { |s,kv| s + kv.last }
+  xfer_amount = total_amount.to_f * RATIOS.inject(0) { |s,kv| s + kv.last }
 
   xfer_rows = [
     "#{today} * Sales Transfer to Personal Checking",
