@@ -31,33 +31,30 @@ task :server do
   sh "env DATABASE_URL=postgres://ledger@192.168.1.14/ledger LEDGER_USERNAME=admin LEDGER_PASSWORD=foo LEDGER_PAYDAY_BENCHMARK=2013-01-18 EMERGENCY_FUND_TARGET=4 rackup -p 9595"
 end
 
-task :build_sales_transfers => :load_config do
+def one_row(query, bind_params=[])
+  rows = []
+  LedgerWeb::Database.handle.fetch(query, *bind_params) do |row|
+    rows << row
+  end
+  rows.first
+end
+
+task :build_sales_transfers => [:env, :load_config] do
   RATIOS = {
     '[Assets:Funds:Emergency]' => 0.3,
     '[Assets:Funds:Car]' =>       0.3
   }
 
-  last_transfer = nil
+  last_transfer = one_row("select max(xtn_date) from ledger where account = 'Assets:Sales:Checking' and tags ~ 'transfer: true'")[:max]
+  sales_since_last_transfer = one_row("select sum(amount) from ledger where account = 'Assets:Sales:Checking' and tags ~ 'sales: true' and xtn_date >= '#{last_transfer}'")[:sum]
 
-  LedgerWeb::Database.handle.fetch("select max(xtn_date) as last_transfer from ledger where account = 'Assets:Sales:Checking' and amount < 0 and tags !~ 'refund'") do |row|
-    last_transfer = row[:last_transfer] || Date.new(2013,9,29)
-  end
-
-  STDERR.puts "Last transfer: #{last_transfer}"
-
-  total_amount = 0
-
-  LedgerWeb::Database.handle.fetch("select sum(amount) as amount from ledger where account = 'Assets:Sales:Checking' and amount > 0 and tags ~ 'sales: true' and xtn_date > '#{last_transfer}'") do |row|
-    total_amount = row[:amount]
-  end
-
+  total_amount = sales_since_last_transfer * (RATIOS.values.inject(0){|s,v|s+=v})
   today = Date.today.strftime('%Y/%m/%d')
-
-  xfer_amount = total_amount.to_f * RATIOS.inject(0) { |s,kv| s + kv.last }
 
   xfer_rows = [
     "#{today} * Sales Transfer to Personal Checking",
-    sprintf("    Assets:Schwab:Checking   $%0.2f", xfer_amount),
+    "    ; transfer: true",
+    sprintf("    Assets:Schwab:Checking   $%0.2f", total_amount),
     "    Assets:Sales:Checking",
     "",
     "#{today} * Sales Transfer to Funds"
