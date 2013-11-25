@@ -1,6 +1,6 @@
 <% @last_bills = query do %>
   select
-    replace(replace(account, 'Expenses:', ''), 'Liabilities:', '') as "Account",
+    account as "Account",
     xtn_date as "Last Paid",
     amount as "Amount"
   from
@@ -201,7 +201,7 @@ from (
   <div class="span6">
     <h3><a href="/reports/bills">Last Bills</a></h3>
     <%= table(@last_bills) do |t|
-          t.link /Account/ => '/reports/register?account=Expenses::this&year=:1'
+          t.decorate /Account/ => BillLinkDecorator.new
           t.decorate /Last Paid/ => TextColorDecorator.new('red'), :if => lambda { |c,r| c.value + 25 <= Date.today }
         end
     %>
