@@ -35,7 +35,7 @@
  select
      account,
      sum(amount) as virtual,
-     sum(case when cleared and not virtual then amount else 0 end) as bank,
+     sum(case when cleared and not virtual and account != 'Assets:Sales:Checking' then amount else 0 end) as bank,
      sum(case when not cleared then amount else 0 end) as uncleared
  from
      ledger
