@@ -1,6 +1,6 @@
 <% @last_bills = query do %>
   select
-    replace(account, 'Expenses:', '') as "Account",
+    replace(replace(account, 'Expenses:', ''), 'Liabilities:', '') as "Account",
     xtn_date as "Last Paid",
     amount as "Amount"
   from
@@ -13,7 +13,7 @@
       from
         ledger
       where
-        account ~ 'Expenses:(Utils|Cable|Rent)'
+        (account ~ 'Expenses:(Utils|Cable|Rent)' or account = 'Liabilities:Mazda')
         and account != 'Expenses:Utils:Water'
         and account !~ ':Fees'
         and xtn_date <= :to
@@ -40,7 +40,7 @@
  from
      ledger
  where
-     account in ('Assets:Schwab:Checking', 'Liabilities:Amex', 'Liabilities:Chase:SP')
+     account in ('Assets:Schwab:Checking', 'Liabilities:Amex', 'Liabilities:Chase:SP', 'Assets:Sales:Checking')
      and xtn_date <= :to
  group by
      account

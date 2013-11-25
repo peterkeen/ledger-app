@@ -48,7 +48,10 @@ task :build_sales_transfers => [:env, :load_config] do
   last_transfer = one_row("select max(xtn_date) from ledger where account = 'Assets:Sales:Checking' and tags ~ 'transfer: true'")[:max]
   sales_since_last_transfer = one_row("select sum(amount) from ledger where account = 'Assets:Sales:Checking' and tags ~ 'sales: true' and xtn_date >= '#{last_transfer}'")[:sum]
 
-  total_amount = sales_since_last_transfer * (RATIOS.values.inject(0){|s,v|s+=v})
+  total_percent = RATIOS.values.inject(0){|s,v|s+=v}.to_f
+  STDERR.puts last_transfer, sales_since_last_transfer.to_f, total_percent
+
+  total_amount = sales_since_last_transfer * total_percent
   today = Date.today.strftime('%Y/%m/%d')
 
   xfer_rows = [
@@ -61,7 +64,7 @@ task :build_sales_transfers => [:env, :load_config] do
   ]
 
   RATIOS.each do |account, amount|
-    xfer_amount = (total_amount * amount).to_f
+    xfer_amount = (sales_since_last_transfer * amount).to_f
     xfer_rows << sprintf("    %s    $%0.2f", account, xfer_amount)
   end
 
