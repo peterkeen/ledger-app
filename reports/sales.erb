@@ -1,0 +1,104 @@
+<% @total_sales = query do %>
+  select
+    -1 * sum(amount) as "Total"
+  from
+    ledger
+  where
+    account = 'Income:Sales'
+    and tags ~ 'Refunded: false'
+<% end %>
+
+<% @sales_by_month = query do %>
+  select
+    xtn_month as "Month",
+    -1 * sum(amount) as "Sales",
+    sum(case when tags !~ 'Refunded: false' then amount else 0 end) as "Refunds"
+  from
+    ledger
+  where
+    account = 'Income:Sales'
+  group by
+    xtn_month
+  order by
+    xtn_month
+<% end %>
+
+<% @sales_by_week = query do %>
+  select
+    date_trunc('week', xtn_date)::date as "Week",
+    -1 * sum(amount) as "Sales",
+    sum(case when tags !~ 'Refunded: false' then amount else 0 end) as "Refunds"
+  from
+    ledger
+  where
+    account = 'Income:Sales'
+  group by
+    date_trunc('week', xtn_date)::date
+  order by
+    date_trunc('week', xtn_date)::date
+<% end %>
+
+<% @sales_by_product = query do %>
+  select
+    note as "Product",
+    count(1) as "Count",
+    -1 * sum(amount) as "Amount",
+    sum(case when tags !~ 'Refunded: false' then amount else 0 end) as "Refunds"
+  from
+    ledger
+  where
+    account = 'Income:Sales'
+  group by
+    note
+  order by
+    note
+<% end %>
+
+<% @expenses = query do %>
+  with sales_expenses as (
+    select
+      replace(account, 'Expenses:Sales:', '') as "Expense",
+      sum(amount) as "Amount"
+    from
+      ledger
+    where
+      account ~ '^Expenses:Sales'
+    group by
+      account
+    order by
+      account
+  )
+  select
+    *
+  from
+    sales_expenses
+  union all
+  select
+    'Total' as "Expense",
+    sum("Amount") as "Amount"
+  from
+    sales_expenses
+<% end %>
+
+<div class="page-header">
+  <%= @total_sales.error %>
+  <h1>Sales <small><%= sprintf("$%0.2f", @total_sales.rows[0][0].value.to_f) %></small></h1>
+</div>
+<div class="row">
+  <div class="span6">
+    <h3>By Month</h3>
+    <%= @sales_by_month.error %>
+    <%= table @sales_by_month %>
+    <h3>By Product</h3>
+    <%= @sales_by_product.error %>
+    <%= table @sales_by_product %>
+    <h3>Expenses</h3>
+    <%= @expenses.error %>
+    <%= table @expenses %>
+  </div>
+  <div class="span6">
+    <h3>By Week</h3>
+    <%= @sales_by_week.error %>
+    <%= table @sales_by_week %>
+  </div>
+</div>
