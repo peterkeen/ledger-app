@@ -17,7 +17,7 @@ class BudgetSummaryReport < LedgerWeb::Report
               account,
               sum(amount) as amount
           from
-              expenses
+              ledger
           where
               account in (select distinct account from budget_periods)
               and tags !~ 'Reimburseable'

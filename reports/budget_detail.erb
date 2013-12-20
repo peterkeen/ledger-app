@@ -13,7 +13,7 @@ left outer join (
         account,
         sum(amount) as amount
     from
-        expenses
+        ledger
     where
         account in (select distinct account from budget_periods)
         and xtn_month = :month
