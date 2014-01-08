@@ -40,15 +40,30 @@ def one_row(query, bind_params=[])
 end
 
 task :build_sales_transfers => [:env, :load_config] do
-  RATIOS = {
-    '[Assets:Funds:Emergency]' => 0.3,
-    '[Assets:Funds:Car]' =>       0.3
-  }
+
+  total_transfer_amount = 0.6
+  accounts = ENV['accounts'] || "car=0.3"
+
+  ratios = accounts.split(/,/).inject({}) do |r, val|
+    account, amount = val.split(':')
+    r["[Assets:Funds:#{account.capitalize}]"] = amount.to_f
+    r
+  end
+
+  ratio_amount = ratios.values.inject(0) { |s,v| s+=v }
+
+  if ratio_amount > total_transfer_amount
+    STDERR.puts "Error: total of account amounts cannot be higher than #{total_transfer_amount}"
+    exit 1
+  end
+
+  emergency = total_transfer_amount - ratio_amount
+  ratios['[Assets:Funds:Emergency]'] = emergency if emergency > 0
 
   last_transfer = one_row("select max(xtn_date) from ledger where account = 'Assets:Sales:Checking' and tags ~ 'transfer: true'")[:max]
   sales_since_last_transfer = one_row("select sum(amount) from ledger where account = 'Assets:Sales:Checking' and tags ~ 'sales: true' and xtn_date >= '#{last_transfer}'")[:sum]
 
-  total_percent = RATIOS.values.inject(0){|s,v|s+=v}.to_f
+  total_percent = ratios.values.inject(0){|s,v|s+=v}.to_f
   STDERR.puts last_transfer, sales_since_last_transfer.to_f, total_percent
 
   total_amount = sales_since_last_transfer * total_percent
@@ -63,7 +78,7 @@ task :build_sales_transfers => [:env, :load_config] do
     "#{today} * Sales Transfer to Funds"
   ]
 
-  RATIOS.each do |account, amount|
+  ratios.each do |account, amount|
     xfer_amount = (sales_since_last_transfer * amount).to_f
     xfer_rows << sprintf("    %s    $%0.2f", account, xfer_amount)
   end
