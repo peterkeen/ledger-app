@@ -42,7 +42,7 @@ end
 task :build_sales_transfers => [:env, :load_config] do
 
   total_transfer_amount = 0.6
-  accounts = ENV['accounts'] || "car=0.3"
+  accounts = ENV['accounts'] || "car:0.3"
 
   ratios = accounts.split(/,/).inject({}) do |r, val|
     account, amount = val.split(':')
