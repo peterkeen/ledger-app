@@ -1,3 +1,6 @@
+<% @years = query do %>
+  select xtn_year from ledger where account = 'Income:Sales' group by xtn_year order by xtn_year desc
+<% end %>
 <% @total_sales = query do %>
   select
     -1 * gross as "Gross",
@@ -11,7 +14,7 @@
       ledger
     where
       account = 'Income:Sales'
-      and xtn_year = '2013-01-01'
+      and <%= params[:year].to_s == "" ? '1 = 1' : "xtn_year = date_trunc('year', cast(:year as date))" %>
   ) x
   ;
 <% end %>
@@ -25,6 +28,7 @@
     ledger
   where
     account = 'Income:Sales'
+    and <%= params[:year].to_s == "" ? '1 = 1' : "xtn_year = date_trunc('year', cast(:year as date))" %>
   group by
     xtn_month
   order by
@@ -40,6 +44,7 @@
     ledger
   where
     account = 'Income:Sales'
+    and <%= params[:year].to_s == "" ? '1 = 1' : "xtn_year = date_trunc('year', cast(:year as date))" %>
   group by
     date_trunc('week', xtn_date)::date
   order by
@@ -56,6 +61,7 @@
     ledger
   where
     account = 'Income:Sales'
+    and <%= params[:year].to_s == "" ? '1 = 1' : "xtn_year = date_trunc('year', cast(:year as date))" %>
   group by
     note
   order by
@@ -71,6 +77,7 @@
       ledger
     where
       account ~ '^Expenses:Sales'
+      and <%= params[:year].to_s == "" ? '1 = 1' : "xtn_year = date_trunc('year', cast(:year as date))" %>
     group by
       account
     order by
@@ -90,7 +97,24 @@
 
 <div class="page-header">
   <%= @total_sales.error %>
-  <h1>Sales <small><%= sprintf("$%0.2f", @total_sales.rows[0][2].value.to_f) %> (<%= sprintf("$%0.2f", @total_sales.rows[0][0].value.to_f) %> gross)</small></h1>
+  <h1>
+    Sales
+    <small><%= sprintf("$%0.2f", @total_sales.rows[0][2].value.to_f) %> (<%= sprintf("$%0.2f", @total_sales.rows[0][0].value.to_f) %> gross, <%= sprintf("$%0.2f", @total_sales.rows[0][1].value.to_f) %> allowance)</small>
+  </h1>
+</div>
+<div class="row">
+  <div class="span12">
+    <form class="form form-inline">    
+      <select name="year" class="input-small">
+        <% @selected_year = params[:year].to_s == "" ? nil : Date.parse(params[:year]).year %>
+        <option value="">All Years</option>
+        <% @years.each do |row| %>
+          <option value="<%= row[0].value %>" <%= (@selected_year == row[0].value.year) ? "selected" : "" %>><%= row[0].value.year %></option>
+        <% end %>
+      </select>
+      <input type="submit" value="Update" class="btn">
+    </form>
+  </div>
 </div>
 <div class="row">
   <div class="span6">
