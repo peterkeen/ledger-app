@@ -90,7 +90,7 @@
 
 <div class="page-header">
   <%= @total_sales.error %>
-  <h1>Sales <small><%= sprintf("$%0.2f", @total_sales.rows[0][2].value.to_f) %> (<%= sprintf("$0.2f", @total_sales.rows[0][0].value.to_f) %> gross)</small></h1>
+  <h1>Sales <small><%= sprintf("$%0.2f", @total_sales.rows[0][2].value.to_f) %> (<%= sprintf("$%0.2f", @total_sales.rows[0][0].value.to_f) %> gross)</small></h1>
 </div>
 <div class="row">
   <div class="span6">
