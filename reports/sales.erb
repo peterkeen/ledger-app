@@ -1,11 +1,19 @@
 <% @total_sales = query do %>
   select
-    -1 * sum(amount) as "Total"
-  from
-    ledger
-  where
-    account = 'Income:Sales'
-    and tags ~ 'Refunded: false'
+    gross as "Gross",
+    allowance as "Allowance",
+    gross - allowance as "Income"
+  from (
+    select
+      sum(amount) as gross,
+      sum(case when tags ~ 'bugsplat.info' or tags !~ 'Refunded: false' then amount else 0 end) as allowance
+    from
+      ledger
+    where
+      account = 'Income:Sales'
+      and xtn_year = '2013-01-01'
+  ) x
+  ;
 <% end %>
 
 <% @sales_by_month = query do %>
@@ -82,7 +90,7 @@
 
 <div class="page-header">
   <%= @total_sales.error %>
-  <h1>Sales <small><%= sprintf("$%0.2f", @total_sales.rows[0][0].value.to_f) %></small></h1>
+  <h1>Sales <small><%= sprintf("$%0.2f", @total_sales.rows[0][2].value.to_f) %> (<%= sprintf("$0.2f", @total_sales.rows[0][0].value.to_f) %> gross)</small></h1>
 </div>
 <div class="row">
   <div class="span6">
