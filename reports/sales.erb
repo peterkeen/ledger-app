@@ -1,8 +1,8 @@
 <% @total_sales = query do %>
   select
-    gross as "Gross",
-    allowance as "Allowance",
-    gross - allowance as "Income"
+    -1 * gross as "Gross",
+    -1 * allowance as "Allowance",
+    -1 * (gross - allowance) as "Income"
   from (
     select
       sum(amount) as gross,
