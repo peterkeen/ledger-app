@@ -52,7 +52,7 @@ task :build_sales_transfers => [:env, :load_config] do
 
   ratio_amount = ratios.values.inject(0) { |s,v| s+=v }
 
-  if ratio_amount > total_transfer_amount
+  if ratio_amount.round(3) > total_transfer_amount
     STDERR.puts "Error: total of account amounts cannot be higher than #{total_transfer_amount}"
     exit 1
   end
