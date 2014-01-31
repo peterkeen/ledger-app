@@ -34,7 +34,7 @@
  from (
  select
      account,
-     sum(case when account = 'Assets:Sales:Checking' then 0 else amount end) as virtual,
+     sum(amount) as virtual,
      sum(case when cleared and not virtual then amount else 0 end) as bank,
      sum(case when not cleared then amount else 0 end) as uncleared
  from
