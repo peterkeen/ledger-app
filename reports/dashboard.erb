@@ -160,10 +160,24 @@ def relative_time(start_time)
 end
 @last_updated = relative_time(@last_updated_report.rows[0][0].value)
 %>
+
+<% @unbudgeted = query do %>
+  select
+    real_money - funds + liabilities
+  from (
+    select
+      sum(case when account in ('Assets:Schwab:Checking', 'Assets:Amex') then amount else 0 end) as real_money,
+      sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
+      sum(case when account in ('Liabilities:Amex', 'Liabilities:Chase:SP') then amount else 0 end) as liabilities
+    from
+      ledger
+  ) x;
+<% end %>
+
 <% @budget = BudgetSummaryReport.run %>
 <% @budget_remaining = (@budget.rows[0][3].value || 0) %>
 <% @budget_color = @budget_remaining > 0 ? 'green' : 'red' %>
-<% @unbudgeted_remaining = [@current_accounts.rows[-1][2].value - @budget_remaining.abs, 0].max%>
+<% @unbudgeted_remaining = @unbudgeted.rows[0][0].value %>
 <% @unbudgeted_color = @unbudgeted_remaining > 0 ? 'green' : 'red' %>
 <%
   payday_bench = Date.parse(ENV['LEDGER_PAYDAY_BENCHMARK'])
