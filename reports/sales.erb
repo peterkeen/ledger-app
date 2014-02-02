@@ -23,7 +23,8 @@
   select
     xtn_month as "Month",
     -1 * sum(amount) as "Sales",
-    sum(case when tags !~ 'Refunded: false' then amount else 0 end) as "Refunds"
+    sum(case when tags !~ 'Refunded: false' then amount else 0 end) as "Refunds",
+    count(1) as "Count"
   from
     ledger
   where
@@ -39,7 +40,8 @@
   select
     date_trunc('week', xtn_date)::date as "Week",
     -1 * sum(amount) as "Sales",
-    sum(case when tags !~ 'Refunded: false' then amount else 0 end) as "Refunds"
+    sum(case when tags !~ 'Refunded: false' then amount else 0 end) as "Refunds",
+    count(1) as "Count"
   from
     ledger
   where
