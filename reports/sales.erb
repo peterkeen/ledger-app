@@ -126,7 +126,9 @@
     <%= table @sales_by_product %>
     <h3>Expenses</h3>
     <%= @expenses.error %>
-    <%= table @expenses %>
+    <%= table @expenses do |t|
+          t.link /Expense/ => "/reports/register?account=Expenses:Sales::this&year=#{params[:year]}", if: ->(c,r) { c.value != 'Total' }
+        end  %>
   </div>
   <div class="span6">
     <h3>By Week</h3>
