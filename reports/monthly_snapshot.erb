@@ -1,4 +1,4 @@
-<% @selected_month = params[:month].to_s == "" ? Date.(Date.today.year, Date.today.month, 1) : Date.parse(params[:month]) %>
+<% @selected_month = params[:month].to_s == "" ? Date.new(Date.today.year, Date.today.month, 1) : Date.parse(params[:month]) %>
 
 <% @months = query do %>
   select
