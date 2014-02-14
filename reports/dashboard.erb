@@ -129,7 +129,7 @@
  where
      not cleared
      and xtn_date <= :to
-     and account in ('Assets:Schwab:Checking', 'Liabilities:Amex', 'Liabilities:Chase:SP')
+     and account in ('Assets:Schwab:Checking', 'Assets:Sales:Checking', 'Liabilities:Amex', 'Liabilities:Chase:SP')
  order by
      xtn_date,
      account,
