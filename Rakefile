@@ -41,12 +41,12 @@ end
 
 task :build_sales_transfers => [:env, :load_config] do
 
-  total_transfer_amount = 0.6
+  total_transfer_amount = 0.8
   accounts = ENV['accounts'] || "car:0.3"
 
   ratios = accounts.split(/,/).inject({}) do |r, val|
     account, amount = val.split(':')
-    r["[Assets:Funds:#{account.capitalize}]"] = amount.to_f
+    r["#{account.capitalize}"] = amount.to_f
     r
   end
 
@@ -58,7 +58,7 @@ task :build_sales_transfers => [:env, :load_config] do
   end
 
   emergency = total_transfer_amount - ratio_amount
-  ratios['[Assets:Funds:Emergency]'] = emergency if emergency > 0
+  ratios['Emergency'] = emergency if emergency > 0
 
   last_transfer = one_row("select max(xtn_date) from ledger where account = 'Assets:Sales:Checking' and tags ~ 'transfer: true'")[:max]
   sales_since_last_transfer = one_row("select sum(amount) from ledger where account = 'Assets:Sales:Checking' and tags ~ 'sales: true' and xtn_date >= '#{last_transfer}'")[:sum]
@@ -80,10 +80,9 @@ task :build_sales_transfers => [:env, :load_config] do
 
   ratios.each do |account, amount|
     xfer_amount = (sales_since_last_transfer * amount).to_f
-    xfer_rows << sprintf("    %s    $%0.2f", account, xfer_amount)
+    xfer_rows << sprintf("    %s    $%0.2f", "Assets:Funds:#{account}", xfer_amount)
+    xfer_rows << sprintf("    %s    $%0.2f", "Liabilities:Funds:#{account}", xfer_amount * -1)
   end
-
-  xfer_rows << "    [Assets:Schwab:Checking]"
 
   puts xfer_rows.join("\n") + "\n"
 
