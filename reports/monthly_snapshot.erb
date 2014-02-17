@@ -200,8 +200,10 @@ from
     <h4>Income</h4>
     <%= @income.error %>
     <%= table @income do |t|
+          t.link /Account/ => "/reports/register?account=:0&month=#{@selected_month}", :if => ->(c,r){!(c.text =~ /(Salary|Sales|Total)/)}
           t.link /Account/ => "/reports/register?account=Income:Salary&month=#{@selected_month}", :if => ->(c,r){c.text =~ /Salary/}
           t.link /Account/ => "/reports/register?account=Income:Sales&month=#{@selected_month}", :if => ->(c,r){c.text =~ /Sales/}
+          t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
         end
     %>
   </div>
