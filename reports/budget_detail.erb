@@ -43,7 +43,7 @@ order by
   <div class="span12">
     <%= table @query do |t|
           t.link /Account/ => "/reports/register?account=Expenses::0&month=#{LedgerWeb::Report.params[:month]}"
-          t.decorate /Diff/ => TextColorDecorator.new('red'), :if => lambda { |c,r| c.value < 0 }
+          t.decorate /Diff/ => StyleDecorator.new(color: 'red'), :if => lambda { |c,r| c.value < 0 }
         end %>
   </div>
 </div>

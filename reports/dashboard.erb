@@ -215,8 +215,8 @@ from (
   <div class="span6">
     <h3><a href="/reports/bills">Last Bills</a></h3>
     <%= table(@last_bills) do |t|
-          t.decorate /Account/ => BillLinkDecorator.new
-          t.decorate /Last Paid/ => TextColorDecorator.new('red'), :if => lambda { |c,r| c.value + 25 <= Date.today }
+          t.decorate /Account/ => ExpensesDecorator.new(year: ->(c,r){r[1].value})
+          t.decorate /Last Paid/ => StyleDecorator.new(color: 'red'), :if => lambda { |c,r| c.value + 25 <= Date.today }
         end
     %>
   </div>
@@ -233,7 +233,7 @@ from (
     <h3>Fund Levels</h3>
     <%= table(@fund_levels) do |t|
           t.link /Account/ => '/reports/register?account=Assets:Funds::0$&include_virtual=on&cleared='
-          t.decorate /Balance/ => TextColorDecorator.new('red'), :if => lambda { |c,r| c.value < 0 }
+          t.decorate /Balance/ => StyleDecorator.new(color: 'red'), :if => lambda { |c,r| c.value < 0 }
         end
     %>
   </div>
@@ -241,7 +241,7 @@ from (
     <h3><a href="/reports/register?account=Assets:Funds:Emergency&include_virtual=on&cleared=">Emergency Fund Longevity</a></h3>
     <%= @emergency_fund.error %>
     <%= table(@emergency_fund) do |t|
-          t.decorate /(Months|Needed)/ => TextColorDecorator.new('red'), :if => lambda { |c,r| r[3].value > 0.000001 }
+          t.decorate /(Months|Needed)/ => StyleDecorator.new(color: 'red'), :if => lambda { |c,r| r[3].value > 0.000001 }
           t.link /Trailing 12 Month/ => '/reports/monthly_expenses'
         end %>
     <h3>Goals</h3>

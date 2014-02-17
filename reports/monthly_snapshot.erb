@@ -59,7 +59,7 @@ with inc as (
 <% @budgeted_expenses = query do %>
 with budgeted as (  
   select
-      replace(b.account, 'Expenses:', '') as "Account",
+      b.account as "Account",
       b.amount as "Budget",
       coalesce(x.amount, 0) as "Spent",
       b.amount - coalesce(x.amount, 0) as "Diff"
@@ -154,7 +154,7 @@ from
 <div class="row">
   <div class="span12">
     <form class="form form-inline">    
-      <select name="month" class="input-small">
+      <select name="month" class="input">
         <option value="">All Months</option>
         <% @months.each do |row| %>
           <option value="<%= row[0].value %>" <%= (@selected_month == row[0].value) ? "selected" : "" %>><%= row[0].value %></option>
@@ -199,19 +199,35 @@ from
   <div class="span6">
     <h4>Income</h4>
     <%= @income.error %>
-    <%= table @income %>
+    <%= table @income do |t|
+          t.link /Account/ => "/reports/register?account=Income:Salary&month=#{@selected_month}", :if => ->(c,r){c.text =~ /Salary/}
+          t.link /Account/ => "/reports/register?account=Income:Sales&month=#{@selected_month}", :if => ->(c,r){c.text =~ /Sales/}
+        end
+    %>
   </div>
   <div class="span6">
     <h4>Funds</h4>
     <%= @funds.error %>
-    <%= table @funds %>
+    <%= table @funds do |t|
+          t.link /Fund/ => "/reports/register?account=:0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
+          t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+        end
+    %>
   </div>
   <div class="span12">
     <h4>Budgeted Expenses</h4>
     <%= @budgeted_expenses.error %>
-    <%= table @budgeted_expenses %>
+    <%= table @budgeted_expenses do |t|
+          t.decorate /Account/ => ExpensesDecorator.new(month: @selected_month, cleared: '')
+          t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+        end
+    %>
     <h4>Unbudgeted Expenses</h4>
     <%= @unbudgeted_expenses.error %>
-    <%= table @unbudgeted_expenses %>
+    <%= table @unbudgeted_expenses do |t|
+          t.decorate /Account/ => ExpensesDecorator.new(month: @selected_month, cleared: '')
+          t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+        end
+    %>
   </div>
 </div>
