@@ -41,7 +41,7 @@ end
 
 task :build_sales_transfers => [:env, :load_config] do
 
-  total_transfer_amount = 0.8
+  total_transfer_amount = 0.7
   accounts = ENV['accounts'] || "car:0.3"
 
   ratios = accounts.split(/,/).inject({}) do |r, val|
@@ -79,6 +79,7 @@ task :build_sales_transfers => [:env, :load_config] do
   ]
 
   ratios['Taxes'] = 0.2
+  ratios['Sales'] = 0.1
 
   ratios.each do |account, amount|
     xfer_amount = (sales_since_last_transfer * amount).to_f
