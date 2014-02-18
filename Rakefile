@@ -78,6 +78,8 @@ task :build_sales_transfers => [:env, :load_config] do
     "#{today} * Sales Transfer to Funds"
   ]
 
+  ratios['Taxes'] = 0.2
+
   ratios.each do |account, amount|
     xfer_amount = (sales_since_last_transfer * amount).to_f
     xfer_rows << sprintf("    %s    $%0.2f", "Assets:Funds:#{account}", xfer_amount)
