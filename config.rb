@@ -72,4 +72,8 @@ LedgerWeb::Config.new do |config|
     puts "Done Inserting Update Record"
   end
 
+  config.add_hook :after_load do |db|
+    puts "Updating xtn_week"
+    db["update ledger set xtn_week = date_trunc('week', xtn_date)::date"].update
+  end
 end
