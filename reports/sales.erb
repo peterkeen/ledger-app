@@ -38,7 +38,7 @@
 
 <% @sales_by_week = query do %>
   select
-    date_trunc('week', xtn_date)::date as "Week",
+    xtn_week as "Week",
     -1 * sum(amount) as "Sales",
     sum(case when tags !~ 'Refunded: false' then amount else 0 end) as "Refunds",
     count(1) as "Count"
@@ -48,9 +48,9 @@
     account = 'Income:Sales'
     and <%= params[:year].to_s == "" ? '1 = 1' : "xtn_year = date_trunc('year', cast(:year as date))" %>
   group by
-    date_trunc('week', xtn_date)::date
+    xtn_week
   order by
-    date_trunc('week', xtn_date)::date
+    xtn_week
 <% end %>
 
 <% @sales_by_product = query do %>
