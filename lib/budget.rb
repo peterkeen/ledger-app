@@ -21,6 +21,7 @@ class BudgetSummaryReport < LedgerWeb::Report
           where
               account in (select distinct account from budget_periods)
               and tags !~ 'Reimburseable'
+              and tags !~ 'nobudget'
           group by
               xtn_month,
               account
