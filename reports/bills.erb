@@ -7,7 +7,7 @@
     sum(case when note = 'State Farm' and account ~ 'Expenses' then amount else 0 end) as "State Farm",
     sum(case when account = 'Expenses:Cell Phone' then amount else 0 end) as "Cell",
     sum(case when account = 'Expenses:Cable' then amount else 0 end) as "Cable",
-    sum(case when account = 'Expenses:Rent' then amount else 0 end) as "Rent"
+    sum(case when note = 'Mortgage Payment' and account !~ 'Checking' then amount else 0 end) as "Mortgage"
   from
     ledger
   where
