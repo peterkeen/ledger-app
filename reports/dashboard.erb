@@ -88,9 +88,16 @@
          from
              ledger
          where
-             account ~ '^Expenses'
-             and account !~ '(Depreciation|Taxes|Interest|Insurance|Travel|Computers|Medical|Bike|Wedding|Furniture|Stripe|Car|Moving|Sales|House)'
-             and tags !~ '(Emergency|Reimbursable)'
+             (
+               account ~ '^Expenses'
+               and account !~ '(Depreciation|Taxes|Interest|Insurance|Travel|Computers|Medical|Bike|Wedding|Furniture|Stripe|Car|Moving|Sales|House)'
+               and tags !~ '(Emergency|Reimbursable)'
+             )
+             or
+             (
+               account in ('Expenses:Interest:Mortgage', 'Assets:House:Equity', 'Assets:House:Escrow')
+               and tags !~ 'nobudget'
+             )          
              and xtn_month != date_trunc('month', now())::date
          group by
              xtn_month
