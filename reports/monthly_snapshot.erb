@@ -76,6 +76,7 @@ with budgeted as (
           account in (select distinct account from budget_periods)
           and xtn_month = '<%= @selected_month %>'
           and tags !~ 'Reimburseable'
+          and tags !~ 'nobudget'
       group by
           xtn_month,
           account
