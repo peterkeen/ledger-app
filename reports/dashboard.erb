@@ -40,7 +40,7 @@
  from
      ledger
  where
-     account in ('Assets:Schwab:Checking', 'Liabilities:Amex', 'Liabilities:Chase:SP', 'Assets:Sales:Checking')
+     account in ('Assets:Schwab:Checking', 'Liabilities:Chase:SP')
      and xtn_date <= :to
  group by
      account
@@ -136,7 +136,7 @@
  where
      not cleared
      and xtn_date <= :to
-     and account in ('Assets:Schwab:Checking', 'Assets:Sales:Checking', 'Liabilities:Amex', 'Liabilities:Chase:SP')
+     and account in ('Assets:Schwab:Checking', 'Liabilities:Chase:SP')
  order by
      xtn_date,
      account,
@@ -175,7 +175,7 @@ end
     select
       sum(case when account in ('Assets:Schwab:Checking', 'Assets:Amex', 'Assets:Receivable:Emily') then amount else 0 end) as real_money,
       sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
-      sum(case when account in ('Liabilities:Amex', 'Liabilities:Chase:SP', 'Liabilities:Payable') then amount else 0 end) as liabilities
+      sum(case when account in ('Liabilities:Chase:SP', 'Liabilities:Payable') then amount else 0 end) as liabilities
     from
       ledger
   ) x;
