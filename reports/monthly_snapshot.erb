@@ -23,15 +23,6 @@ with inc as (
       and account = 'Assets:Schwab:Checking'
       and note ~ 'Salary'
     union all
-    select 
-      'Sales (60% after expenses)' as account,
-      0.6 * (-1 * sum(amount)) as amount
-    from
-      ledger
-    where
-      xtn_month = '<%= @selected_month %>'
-      and (account ~ 'Income:Sales' or account ~ 'Expenses:Sales')
-    union all
     select
       *
     from (
@@ -42,7 +33,6 @@ with inc as (
         ledger
       where
         account ~ '^Income'
-        and account !~ '^Income:Sales'
         and account !~ '^Income:Salary'
         and xtn_month = '<%= @selected_month %>'
       group by
@@ -108,7 +98,6 @@ from
     where
       account not in (select account from budget_months where xtn_month = '<%= @selected_month %>')
       and note !~ 'Salary'
-      and account !~ 'Expenses:Sales:'
       and xtn_month = '<%= @selected_month %>'
     group by
       account
@@ -201,9 +190,8 @@ from
     <h4>Income</h4>
     <%= @income.error %>
     <%= table @income do |t|
-          t.link /Account/ => "/reports/register?account=:0&month=#{@selected_month}", :if => ->(c,r){!(c.text =~ /(Salary|Sales|Total)/)}
+          t.link /Account/ => "/reports/register?account=:0&month=#{@selected_month}", :if => ->(c,r){!(c.text =~ /(Salary|Total)/)}
           t.link /Account/ => "/reports/register?account=Income:Salary&month=#{@selected_month}", :if => ->(c,r){c.text =~ /Salary/}
-          t.link /Account/ => "/reports/register?account=Income:Sales&month=#{@selected_month}", :if => ->(c,r){c.text =~ /Sales/}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
         end
     %>
