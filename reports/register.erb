@@ -39,7 +39,7 @@
     <%= table RegisterReport.run do |t|
           t.decorate :all => LedgerWeb::Decorators::HighlightDecorator.new('#d9edf7'), :if => lambda{|c,r| !r[5].value }
           t.decorate /Xtn/ => LedgerWeb::Decorators::IconDecorator.new('chevron-right')
-          t.link /(Account|Payee)/ => "/reports/register?account=:this&include_virtual=#{params[:include_virtual]}&year=#{params[:year]}&month=#{params[:month]}&cleared=#{params[:cleared]&payee=#{params[:payee]}"
+          t.link /(Account|Payee)/ => "/reports/register?account=:this&include_virtual=#{params[:include_virtual]}&year=#{params[:year]}&month=#{params[:month]}&cleared=#{params[:cleared]}&payee=#{params[:payee]}"
           t.link /Xtn/ => "/reports/register?xtn_id=:this&include_virtual=#{params[:include_virtual]}"
         end
     %>
