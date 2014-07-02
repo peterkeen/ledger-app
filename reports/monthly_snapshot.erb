@@ -163,10 +163,10 @@ from
         </tr>
       </thead>
       <%
-        @income_value = @income.rows[-1][1].value || 0
-        @budgeted_value = @budgeted_expenses.rows[-1][2].value || 0
-        @unbudgeted_value = @unbudgeted_expenses.rows[-1][1].value || 0
-        @funds_value = @funds.rows[-1][2].value || 0
+        @income_value = (@income.rows[-1][1].value rescue 0) || 0
+        @budgeted_value = (@budgeted_expenses.rows[-1][2].value rescue 0) || 0
+        @unbudgeted_value = (@unbudgeted_expenses.rows[-1][1].value rescue 0) || 0
+        @funds_value = (@funds.rows[-1][2].value rescue 0) || 0
       %>
       <tbody>
         <tr>
