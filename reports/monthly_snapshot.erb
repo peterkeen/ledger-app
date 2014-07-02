@@ -162,26 +162,32 @@ from
           <th><span class="pull-right">Amount</span></th>
         </tr>
       </thead>
+      <%
+        @income_value = @income.rows[-1][1].value || 0
+        @budgeted_value = @budgeted_expenses.rows[-1][2].value || 0
+        @unbudgeted_value = @unbudgeted_expenses.rows[-1][1].value || 0
+        @funds_value = @funds.rows[-1][2].value || 0
+      %>
       <tbody>
         <tr>
           <td>Income</td>
-          <td><span class="pull-right"><%= sprintf("%0.2f", @income.rows[-1][1].value) %></span></td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", @income_value) %></span></td>
         </tr>
         <tr>
           <td>Budgeted Expenses</td>
-          <td><span class="pull-right"><%= sprintf("%0.2f", @budgeted_expenses.rows[-1][2].value) %></span></td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", @budgeted_value) %></span></td>
         </tr>
         <tr>
           <td>Unbudgeted Expenses</td>
-          <td><span class="pull-right"><%= sprintf("%0.2f", @unbudgeted_expenses.rows[-1][1].value) %></span></td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", @unbudgeted_value) %></span></td>
         </tr>
         <tr>
           <td>Funds</td>
-          <td><span class="pull-right"><%= sprintf("%0.2f", @funds.rows[-1][1].value) %></span></td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", @funds_value) %></span></td>
         </tr>
         <tr>
           <td><strong>Net Cash</strong></td>
-          <td><span class="pull-right"><strong><%= sprintf("%0.2f", @income.rows[-1][1].value - (@budgeted_expenses.rows[-1][2].value + @unbudgeted_expenses.rows[-1][1].value) - @funds.rows[-1][1].value) %></strong></span></td>
+          <td><span class="pull-right"><strong><%= sprintf("%0.2f", @income_value - (@budgeted_value + @unbudgeted_value) - @funds_value) %></strong></span></td>
         </tr>
       </tbody>
     </table>
