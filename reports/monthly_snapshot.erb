@@ -120,22 +120,47 @@ from
   with funds as (
     select
       account as "Fund",
-      sum(amount) as "Amount"
+      sum(case when xtn_month = '<%= @selected_month %>' then amount else 0 end) as "Amount",
+      sum(amount) as "Balance"
     from
       ledger
     where
       account ~ '^Assets:Funds'
-      and xtn_month = '<%= @selected_month %>'
+      and xtn_month <= '<%= @selected_month %>'
     group by
       account
     having
-      sum(amount) != 0
+      round(sum(amount)) != 0
     order by
       account
   )
   select * from funds
   union all
-  select 'Total' as "Fund", sum("Amount") as "Amount" from funds
+  select 'Total' as "Fund", sum("Amount") as "Amount", sum("Balance") as "Balance" from funds
+<% end %>
+
+<% @balances = query do %>
+  select
+    account as "Account",
+    sum(case when xtn_month <= '<%= @selected_month %>' then amount else 0 end) as "<%= @selected_month %>",
+    sum(case when xtn_month <= '<%= @selected_month << 1 %>' then amount else 0 end) as "<%= @selected_month << 1 %>",
+    sum(case when xtn_month <= '<%= @selected_month << 2 %>' then amount else 0 end) as "<%= @selected_month << 2 %>",
+    sum(case when xtn_month <= '<%= @selected_month << 12 %>' then amount else 0 end) as "<%= @selected_month << 12 %>",
+    sum(case when xtn_month <= '<%= @selected_month << 24 %>' then amount else 0 end) as "<%= @selected_month << 24 %>"
+  from
+    ledger
+  where
+    account in (
+      'Assets:Schwab:Checking',
+      'Assets:Amex',
+      'Liabilities:Loans:Mazda',
+      'Liabilities:Loans:Mortgage',
+      'Liabilities:Chase:SP'
+    )
+  group by
+    account
+  order by
+    account
 <% end %>
 
 <div class="page-title">
@@ -145,7 +170,7 @@ from
   <div class="span12">
     <form class="form form-inline">    
       <select name="month" class="input">
-        <option value="">All Months</option>
+        <option value="">Current Month</option>
         <% @months.each do |row| %>
           <option value="<%= row[0].value %>" <%= (@selected_month == row[0].value) ? "selected" : "" %>><%= row[0].value %></option>
         <% end %>
@@ -226,5 +251,8 @@ from
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
         end
     %>
+    <h4>Account Balances</h4>
+    <%= @balances.error %>
+    <%= table @balances %>
   </div>
 </div>

@@ -13,7 +13,7 @@
       from
         ledger
       where
-        (account ~ 'Expenses:(Utils|Cable|Interest:Mortgage)' or account = 'Liabilities:Mazda')
+        (account ~ 'Expenses:(Utils|Cable|Interest:Mortgage)' or account = 'Liabilities:Loans:Mazda')
         and account != 'Expenses:Utils:Water'
         and account !~ ':Fees'
         and xtn_date <= :to
@@ -199,9 +199,9 @@ select
     goal_amount - spent_amount as "Left"
 from (
     select
-        'Liabilities:Mazda' as goal,
+        'Liabilities:Loans:Mazda' as goal,
         0 as goal_amount,
-        (select abs(sum(amount)) from ledger where account = 'Liabilities:Mazda') as spent_amount
+        (select abs(sum(amount)) from ledger where account = 'Liabilities:Loans:Mazda') as spent_amount
     ) x
 <% end %>
 
