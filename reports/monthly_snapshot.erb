@@ -130,7 +130,7 @@ from
     group by
       account
     having
-      round(sum(amount)) != 0
+      round(sum(case when xtn_month = '<%= @selected_month %>' then amount else 0 end)) != 0 or round(sum(amount)) != 0
     order by
       account
   )
