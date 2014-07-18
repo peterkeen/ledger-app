@@ -95,8 +95,11 @@ from
       sum(amount) as "Amount"
     from
       expenses
-    where
-      account not in (select account from budget_months where xtn_month = '<%= @selected_month %>')
+    where (
+        (account not in (select account from budget_months where xtn_month = '<%= @selected_month %>'))
+        or
+        (account in (select account from budget_months where xtn_month = '<%= @selected_month %>') and tags ~ 'nobudget: true')
+      )
       and note !~ 'Salary'
       and xtn_month = '<%= @selected_month %>'
     group by
