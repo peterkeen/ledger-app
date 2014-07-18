@@ -198,10 +198,15 @@ select
     spent_amount as "Amount",
     goal_amount - spent_amount as "Left"
 from (
-    select
+        select
         'Liabilities:Loans:Mazda' as goal,
         0 as goal_amount,
         (select abs(sum(amount)) from ledger where account = 'Liabilities:Loans:Mazda') as spent_amount
+        union all
+        select
+        'Assets:Funds:Emergency' as goal,
+        24000.0 as goal_amount,
+        (select abs(sum(amount)) from ledger where account = 'Assets:Funds:Emergency') as spent_amount
     ) x
 <% end %>
 
