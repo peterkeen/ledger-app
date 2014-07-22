@@ -255,7 +255,8 @@ from
     <%= table @unbudgeted_expenses do |t|
           t.decorate /Account/ => ExpensesDecorator.new(month: @selected_month, cleared: '')
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
-          t.decorate /Amount/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){c.value > 500}
+          t.decorate /Amount/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){c.value >= 500 && r[0].text == 'Total'}
+          t.decorate /Amount/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){c.value >= 100 && r[0].text != 'Total'}
         end
     %>
     <h4>Account Balances</h4>
