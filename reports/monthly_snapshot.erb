@@ -236,6 +236,7 @@ from
     <%= table @funds do |t|
           t.link /Fund/ => "/reports/register?account=:0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+          t.decorate /Balance/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){c.value < 0}
         end
     %>
   </div>
@@ -245,6 +246,7 @@ from
     <%= table @budgeted_expenses do |t|
           t.decorate /Account/ => ExpensesDecorator.new(month: @selected_month, cleared: '')
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+          t.decorate /Diff/ => StyleDecorator.new(color: 'red'), :if => lambda { |c,r| c.value < 0 }
         end
     %>
     <h4>Unbudgeted Expenses</h4>
@@ -252,6 +254,7 @@ from
     <%= table @unbudgeted_expenses do |t|
           t.decorate /Account/ => ExpensesDecorator.new(month: @selected_month, cleared: '')
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+          t.decorate /Amount/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){c.value > 500}
         end
     %>
     <h4>Account Balances</h4>
