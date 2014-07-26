@@ -13,7 +13,7 @@
       from
         ledger
       where
-        (account ~ 'Expenses:(Utils|Cable|Interest:Mortgage)' or account = 'Liabilities:Loans:Mazda')
+        (account ~ 'Expenses:(Utils|Cable|Interest:Mortgage|Interest:Mazda)'
         and account != 'Expenses:Utils:Water'
         and account !~ ':Fees'
         and xtn_date <= :to
