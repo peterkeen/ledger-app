@@ -63,51 +63,6 @@
  from current_accounts    
 <% end %>
 
-<% @emergency_fund_target = ENV['EMERGENCY_FUND_TARGET'] || 3 %>
-<% @emergency_fund = query do %>
- select
-     em.emergency_fund as "Emergency Fund",
-     ex.expenses as "Trailing 12 Month Expenses",
-     em.emergency_fund / ex.expenses as "Months",
-     case when em.emergency_fund / ex.expenses > <%= @emergency_fund_target %> then 0 else (<%= @emergency_fund_target %> - (em.emergency_fund / ex.expenses)) * ex.expenses end as "Needed"
- from (
-     select
-         sum(amount) as emergency_fund
-     from
-         ledger
-     where
-         account = 'Assets:Funds:Emergency'
- ) em,
-(
-     select
-         avg(amount) as expenses
-     from (
-         select
-             xtn_month,
-             sum(amount) as amount
-         from
-             ledger
-         where
-             (
-               account ~ '^Expenses'
-               and account !~ '(Depreciation|Taxes|Interest|Insurance|Travel|Computers|Medical|Bike|Wedding|Furniture|Stripe|Car|Moving|Sales|House)'
-               and tags !~ '(Emergency|Reimbursable)'
-             )
-             or
-             (
-               account in ('Expenses:Interest:Mortgage', 'Assets:House:Equity', 'Assets:House:Escrow')
-               and tags !~ 'nobudget'
-             )          
-             and xtn_month != date_trunc('month', now())::date
-         group by
-             xtn_month
-         order by
-             xtn_month desc
-         limit 12
-     ) x
- ) ex
-<% end %>
-
 <% @fund_levels = query do %>
  select
      replace(account, 'Assets:Funds:', '') as "Account",
@@ -186,6 +141,21 @@ end
 <% @budget_color = @budget_remaining > 0 ? 'green' : 'red' %>
 <% @unbudgeted_remaining = @unbudgeted.rows[0][0].value %>
 <% @unbudgeted_color = @unbudgeted_remaining > 0 ? 'green' : 'red' %>
+<% @budget_float = 500 %>
+<% @budget_total = @budget.rows[0][1].value + @budget_float %>
+
+<% @emergency_fund_target = 4 %>
+<% @emergency_fund = query do %>
+  select
+    sum(amount) as "Emergency Fund",
+    <%= @budget_total %> as "Budget + $<%= @budget_float %> Float",
+    round(sum(amount) / (<%= @budget_total %>), 2) as "Months",
+    (<%= @emergency_fund_target %> - round(sum(amount) / (<%= @budget_total %>), 2)) * <%= @budget_total %> as "Needed"
+  from
+    ledger
+  where
+    account = 'Assets:Funds:Emergency'
+<% end %>
 <%
   payday_bench = Date.parse(ENV['LEDGER_PAYDAY_BENCHMARK'])
   @next_payday = payday_bench + (((Date.today() - payday_bench).to_f / 14.0).ceil * 14)
@@ -242,10 +212,7 @@ from (
   <div class="span6">
     <h3><a href="/reports/register?account=Assets:Funds:Emergency&include_virtual=on&cleared=">Emergency Fund Longevity</a></h3>
     <%= @emergency_fund.error %>
-    <%= table(@emergency_fund) do |t|
-          t.decorate /(Months|Needed)/ => StyleDecorator.new(color: 'red'), :if => lambda { |c,r| r[3].value > 0.000001 }
-          t.link /Trailing 12 Month/ => '/reports/monthly_expenses'
-        end %>
+    <%= table(@emergency_fund) %>
     <h3>Goals</h3>
     <%= @goals.error %>
     <%= table(@goals) do |t|
