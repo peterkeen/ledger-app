@@ -16,7 +16,6 @@
         account ~ 'Expenses:(Utils|Cable|Interest:Mortgage|Interest:Mazda)'
         and account != 'Expenses:Utils:Water'
         and account !~ ':Fees'
-        and xtn_date <= :to
       group by
         account
     )
@@ -41,7 +40,6 @@
      ledger
  where
      account in ('Assets:Schwab:Checking', 'Liabilities:Chase:SP')
-     and xtn_date <= :to
  group by
      account
  ) x
@@ -90,7 +88,6 @@
      ledger
  where
      not cleared
-     and xtn_date <= :to
      and account in ('Assets:Schwab:Checking', 'Liabilities:Chase:SP')
  order by
      xtn_date,
