@@ -1,0 +1,54 @@
+<% @burn_down = query do %>
+with weeks as (
+ select
+   x,
+   '2014-01-06'::date + (x || ' weeks')::interval as xtn_date
+  from
+    generate_series(0,52) x
+),
+assets as (
+  select
+    xtn_date,
+    xtn_week,
+    amount
+  from
+    ledger
+  where
+    account in ('Assets:Schwab:Checking', 'Assets:Amex')
+  order by
+    xtn_date,
+    amount
+),
+projection_weeks as (
+  select
+    count(1)
+  from
+    weeks
+  where
+    xtn_date + '1 week'::interval <= date_trunc('week', now()::date) + '1 week'::interval
+)  
+select
+  weeks.xtn_date::date as "Week",
+  (select sum(amount) from assets where xtn_date <= weeks.xtn_date) as "Starting",
+  (select sum(case when amount < 0 then amount else 0 end) from assets where xtn_date between weeks.xtn_date + '1 day'::interval and weeks.xtn_date + '1 week'::interval) as "Cash Out",
+  (select sum(case when amount > 0 then amount else 0 end) from assets where xtn_date between weeks.xtn_date + '1 day'::interval and weeks.xtn_date + '1 week'::interval) as "Cash In",
+  (select sum(amount) from assets where xtn_date <= weeks.xtn_date + '1 week'::interval) as "Ending"
+from
+  weeks
+where
+  xtn_date + '1 week'::interval <= date_trunc('week', now()::date) + '1 week'::interval
+union all
+select
+  weeks.xtn_date::date as "Week",
+  (select sum(amount) from assets where xtn_date <= now()::date) - (1346 * (x - (select count from projection_weeks))) as "Starting",
+  (-1 *1346) as "Cash Out",
+  0 as "Cash In",
+  (select sum(amount) from assets where xtn_date <= now()::date) - (1346 * (x - (select count from projection_weeks) + 1)) as "Ending"
+from
+  weeks
+where                                    
+  xtn_date + '1 week'::interval > date_trunc('week', now()::date) + '1 week'::interval  
+<% end %>
+
+<%= @burn_down.error %>
+<%= table @burn_down %>
