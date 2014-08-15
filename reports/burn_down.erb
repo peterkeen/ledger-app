@@ -41,7 +41,7 @@ union all
 select
   weeks.xtn_date::date as "Week",
   (select sum(amount) from assets where xtn_date <= now()::date) - (1096 * (x - (select count from projection_weeks))) as "Starting",
-  (-1 *1096) as "Cash Out",
+  -1346 as "Cash Out",
   250 as "Cash In",
   (select sum(amount) from assets where xtn_date <= now()::date) - (1096 * (x - (select count from projection_weeks) + 1)) as "Ending"
 from
