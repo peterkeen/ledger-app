@@ -26,7 +26,7 @@ projection_weeks as (
     weeks
   where
     xtn_date + '1 week'::interval <= date_trunc('week', now()::date) + '1 week'::interval
-)  
+)
 select
   weeks.xtn_date::date as "Week",
   (select sum(amount) from assets where xtn_date <= weeks.xtn_date) as "Starting",
@@ -39,15 +39,36 @@ where
   xtn_date + '1 week'::interval <= date_trunc('week', now()::date) + '1 week'::interval
 union all
 select
-  weeks.xtn_date::date as "Week",
-  (select sum(amount) from assets where xtn_date <= now()::date) - (1096 * (x - (select count from projection_weeks))) as "Starting",
-  -1346 as "Cash Out",
-  250 as "Cash In",
-  (select sum(amount) from assets where xtn_date <= now()::date) - (1096 * (x - (select count from projection_weeks) + 1)) as "Ending"
-from
-  weeks
-where                                    
-  xtn_date + '1 week'::interval > date_trunc('week', now()::date) + '1 week'::interval  
+  week,
+  coalesce(lag(ending, 1) over (rows unbounded preceding) + (select sum(amount) from assets), (select sum(amount) from assets)) as starting,
+  cash_out,
+  cash_in,
+  ending + (select sum(amount) from assets)
+from (
+  select
+     week,
+     250 as cash_in,
+     cash_out,
+     sum(cash_out + 250) over (rows unbounded preceding) as ending
+  from (
+    select
+      week, 
+      -1 * coalesce((select sum(amount) from budget_periods where week = week_num and to_date is null), 0) - (1500 / 4) as cash_out
+    from (
+      select
+        week,
+        row_number() over (partition by date_trunc('month', week) order by week) as week_num
+      from (
+        select
+          ('2014-01-04'::date + (x || ' weeks')::interval)::date as week
+        from
+          generate_series(0,52) x
+      ) x
+      where                                    
+        week >= date_trunc('week', now()::date)
+    ) x
+  ) x
+) x
 <% end %>
 
 <%= @burn_down.error %>
