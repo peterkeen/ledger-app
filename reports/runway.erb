@@ -18,14 +18,6 @@ assets as (
   order by
     xtn_date,
     amount
-),
-projection_weeks as (
-  select
-    count(1)
-  from
-    weeks
-  where
-    xtn_date + '1 week'::interval <= date_trunc('week', now()::date) + '1 week'::interval
 )
 select
   weeks.xtn_date::date as "Week",
