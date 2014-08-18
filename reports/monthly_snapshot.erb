@@ -101,6 +101,7 @@ from
         (account in (select account from budget_months where xtn_month = '<%= @selected_month %>') and tags ~ 'nobudget: true')
       )
       and note !~ 'Salary'
+      and tags !~ 'skipunbudget: true'
       and xtn_month = '<%= @selected_month %>'
     group by
       account
