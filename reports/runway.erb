@@ -68,7 +68,7 @@ from (
 </div>
 <div class="row">
   <div class="span12">
-    <p>This shows actual cash in and cash out of Schwab and Amex Savings accounts up to and including the current week (highlighted in blue). After the current week, expenses are projected from the budget, plus an extra $1500 during the first week of the month to simulate health insurance + unbudget. Assumes a fixed $250/week income from Okapi revenue (which in turn assumes $2000/mo Okapi gross revenue).</p>
+    <p>This shows actual cash in and cash out of Schwab and Amex Savings accounts up to and including the current week (highlighted in blue). After the current week, expenses are projected from the budget, plus an extra $1500 during the first week of the month to simulate health insurance + unbudget. Assumes a fixed $250/week income from Okapi revenue (which in turn assumes $2000/mo Okapi gross revenue). Weeks highlighted in red are net negative ending balance.</p>
   </div>
 </div>
 <div class="row">
@@ -77,6 +77,7 @@ from (
     <%= table @burn_down do |t|
       today = Date.today
       t.decorate /.*/ => StyleDecorator.new('background-color' => 'lightblue'), :if => ->(c,r){today = Date.today; start = r[0].value; endt = r[0].value + 7; today >= start && today < endt }
+      t.decorate /.*/ => StyleDecorator.new('background-color' => '#ffcccc'), :if => ->(c,r){r[-1].value <= 0}
     end %>
   </div>
 </div>
