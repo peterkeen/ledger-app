@@ -4,7 +4,7 @@ with weeks as (
    x,
    '2014-01-06'::date + (x || ' weeks')::interval as xtn_date
   from
-    generate_series(0,52) x
+    generate_series(0,104) x
 ),
 assets as (
   select
@@ -54,7 +54,7 @@ from (
         select
           ('2014-01-06'::date + (x || ' weeks')::interval)::date as week
         from
-          generate_series(0,52) x
+          generate_series(0,104) x
       ) x
     ) x
     where                                    
