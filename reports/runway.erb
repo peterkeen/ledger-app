@@ -22,8 +22,8 @@ assets as (
 select
   weeks.xtn_date::date as "Week",
   (select sum(amount) from assets where xtn_date <= weeks.xtn_date) as "Starting",
-  (select sum(case when amount > 0 then amount else 0 end) from assets where xtn_date between weeks.xtn_date + '1 day'::interval and weeks.xtn_date + '1 week'::interval) as "Cash In",
-  (select sum(case when amount < 0 then amount else 0 end) from assets where xtn_date between weeks.xtn_date + '1 day'::interval and weeks.xtn_date + '1 week'::interval) as "Cash Out",
+  (select sum(case when amount > 0 then amount else 0 end) from assets where xtn_date between weeks.xtn_date and weeks.xtn_date + '6 days'::interval) as "Cash In",
+  (select sum(case when amount < 0 then amount else 0 end) from assets where xtn_date between weeks.xtn_date and weeks.xtn_date + '6 days'::interval) as "Cash Out",
   (select sum(amount) from assets where xtn_date <= weeks.xtn_date + '1 week'::interval) as "Ending"
 from
   weeks
@@ -45,7 +45,7 @@ from (
   from (
     select
       week,
-      week_num,                                   
+      week_num,
       -1 * coalesce((select sum(amount) from budget_periods where week = week_num and to_date is null), 0) - (case when week_num = 1 then 1500 else 0 end) as cash_out
     from (
       select
@@ -79,6 +79,7 @@ from (
       today = Date.today
       t.decorate /.*/ => StyleDecorator.new('background-color' => 'lightblue'), :if => ->(c,r){today = Date.today; start = r[0].value; endt = r[0].value + 7; today >= start && today < endt }
       t.decorate /.*/ => StyleDecorator.new('background-color' => '#ffcccc'), :if => ->(c,r){r[-1].value <= 0}
+      t.link /Week/ => '/reports/register?week=:this&account=Assets:Schwab:Checking|Assets:amex'
     end %>
   </div>
 </div>
