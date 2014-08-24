@@ -39,12 +39,13 @@ select
 from (
   select
      week,
-     250 as cash_in,
+     250 + case when week_num = 1 then 400 else 0 end as cash_in,
      cash_out,
-     sum(cash_out + 250) over (rows unbounded preceding) as ending
+     sum(cash_out + 250 + case when week_num = 1 then 400 else 0 end) over (rows unbounded preceding) as ending
   from (
     select
-      week, 
+      week,
+      week_num,                                   
       -1 * coalesce((select sum(amount) from budget_periods where week = week_num and to_date is null), 0) - (case when week_num = 1 then 1500 else 0 end) as cash_out
     from (
       select
