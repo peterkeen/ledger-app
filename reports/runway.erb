@@ -1,3 +1,7 @@
+<% @okapi_weekly = params[:okapi_weekly] || 250 %>
+<% @emily_monthly = params[:emily_monthly] || 400 %>
+<% @unbudget = params[:unbudget] || 1500 %>
+
 <% @burn_down = query do %>
 with weeks as (
  select
@@ -39,14 +43,14 @@ select
 from (
   select
      week,
-     250 + case when week_num = 1 then 400 else 0 end as cash_in,
+     <%= @okapi_weekly %> + case when week_num = 1 then 400 else 0 end as cash_in,
      cash_out,
-     sum(cash_out + 250 + case when week_num = 1 then 400 else 0 end) over (rows unbounded preceding) as ending
+     sum(cash_out + <%= @okapi_weekly %> + case when week_num = 1 then <%= @emily_monthly %> else 0 end) over (rows unbounded preceding) as ending
   from (
     select
       week,
       week_num,
-      -1 * coalesce((select sum(amount) from budget_periods where week = week_num and to_date is null), 0) - (case when week_num = 1 then 1500 else 0 end) as cash_out
+      -1 * coalesce((select sum(amount) from budget_periods where week = week_num and to_date is null), 0) - (case when week_num = 1 then <%= @unbudget %> else 0 end) as cash_out
     from (
       select
         week,
@@ -64,12 +68,29 @@ from (
 ) x
 <% end %>
 
+<% @end_date = @burn_down.rows.detect { |r| r[-1].value < 0 }[0] || @burn_down.rows[-1][0] %>
+<% @week_count = @burn_down.rows.select { |r| r[-1].value > 0 && r[0].value > Date.today }.length %>
+<% @month_count = @week_count / 4.0 %>                                          
+
 <div class="page-title">
-  <h1>Runway</h1>
+  <h1>Runway <small><%= @end_date.value %> (<%= @week_count %> weeks, <%= @month_count %> months)</small></h1>
 </div>
 <div class="row">
   <div class="span12">
-    <p>This shows actual cash in and cash out of Schwab and Amex Savings accounts up to and including the current week (highlighted in blue). After the current week, expenses are projected from the budget, plus an extra $1500 during the first week of the month to simulate health insurance + unbudget. Assumes a fixed $250/week income from Okapi revenue (which in turn assumes $2000/mo Okapi gross revenue). Weeks highlighted in red are net negative ending balance.</p>
+    <form class="form form-inline">
+      <label for="emily_monthly">Emily Monthly</label>
+      <input type="text" id="emily_monthly" name="emily_monthly" value="<%= @emily_monthly %>">
+      <label for="okapi_weekly">Okapi Weekly</label>
+      <input type="text" id="okapi_weekly" name="okapi_weekly" value="<%= @okapi_weekly %>">
+      <label for="unbudget">Unbudget</label>
+      <input type="text" id="unbudget" name="unbudget" value="<%= @unbudget %>">
+      <input type="submit">
+    </form>
+  </div>
+</div>
+<div class="row">
+  <div class="span12">
+    <p>This shows actual cash in and cash out of Schwab and Amex Savings accounts up to and including the current week (highlighted in blue). After the current week, expenses are projected from the budget, plus an extra $<%= @unbudget %> during the first week of the month to simulate health insurance + unbudget. Assumes a fixed $<%= @okapi_weekly %>/week income from Okapi revenue (which in turn assumes $<%= @okapi_weekly.to_i * 8 %>/mo Okapi gross revenue). Also assumes $<%= @emily_monthly %>/mo from Emily. Weeks highlighted in red have a net negative ending balance.</p>
   </div>
 </div>
 <div class="row">
