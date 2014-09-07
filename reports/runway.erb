@@ -43,14 +43,14 @@ select
 from (
   select
      week,
-     <%= @okapi_weekly %> + case when week_num = 1 then 400 else 0 end as cash_in,
+     <%= @okapi_weekly %> + case when week_num = 1 then <%= @emily_monthly %> else 0 end as cash_in,
      cash_out,
      sum(cash_out + <%= @okapi_weekly %> + case when week_num = 1 then <%= @emily_monthly %> else 0 end) over (rows unbounded preceding) as ending
   from (
     select
       week,
       week_num,
-      -1 * coalesce((select sum(amount) from budget_periods b where b.week = week_num and (week between from_date and two_date or to_date is null), 0) - (case when week_num = 1 then <%= @unbudget %> else 0 end) as cash_out
+      -1 * coalesce((select sum(amount) from budget_periods b where b.week = week_num and (x.week between from_date and to_date or (x.week >= from_date and to_date is null))), 0) - (case when week_num = 1 then <%= @unbudget %> else 0 end) as cash_out
     from (
       select
         week,
@@ -69,6 +69,7 @@ from (
 <% end %>
 
 <% @end_date_row = @burn_down.rows.detect { |r| r[-1].value < 0 } || @burn_down.rows[-1] %>
+<% @end_date = @end_date_row[0] %>
 <% @week_count = @burn_down.rows.select { |r| r[-1].value > 0 && r[0].value > Date.today }.length %>
 <% @month_count = @week_count / 4.0 %>                                          
 
