@@ -2,6 +2,10 @@
 <% @emily_monthly = params[:emily_monthly] || 400 %>
 <% @unbudget = params[:unbudget] || 500 %>
 
+<% @fund_balance = query do %>
+  select sum(amount) from ledger where account ~ 'Assets:Funds' and account != 'Assets:Funds:Emergency'
+<% end %>
+
 <% @burn_down = query do %>
 with weeks as (
  select
@@ -68,11 +72,17 @@ from (
 ) x
 <% end %>
 
-<% @end_date_row = @burn_down.rows.detect { |r| r[-1].value < 0 } || @burn_down.rows[-1] %>
-<% @end_date = @end_date_row[0] %>
-<% @week_count = @burn_down.rows.select { |r| r[-1].value > 0 && r[0].value > Date.today }.length %>
-<% @month_count = @week_count / 4.0 %>                                          
+<%
+  @end_date_row = @burn_down.rows.detect { |r| r[-1].value < 0 } || @burn_down.rows[-1]
+  @end_date = @end_date_row[0]
+  @week_count = @burn_down.rows.select { |r| r[-1].value > 0 && r[0].value > Date.today }.length
+  @month_count = @week_count / 4.0
 
+  @efund_end_date_row = @burn_down.rows.detect { |r| r[-1].value < @fund_balance.rows[0][0].value } || @burn_down.rows[-1]
+  @efund_end_date = @efund_end_date_row[0]
+  @efund_week_count = @burn_down.rows.select { |r| r[-1].value > @fund_balance.rows[0][0].value && r[0].value > Date.today }.length
+  @efund_month_count = @efund_week_count / 4
+%>
 <div class="page-title">
   <h1>Runway <small><%= @end_date.value %> (<%= @week_count %> weeks, <%= @month_count %> months)</small></h1>
 </div>
@@ -92,6 +102,7 @@ from (
 <div class="row">
   <div class="span12">
     <p>This shows actual cash in and cash out of Schwab and Amex Savings accounts up to and including the current week (highlighted in blue). After the current week, expenses are projected from the budget, plus an extra $<%= @unbudget %> during the first week of the month to simulate health insurance + unbudget. Assumes a fixed $<%= @okapi_weekly %>/week income from Okapi revenue (which in turn assumes $<%= @okapi_weekly.to_i * 8 %>/mo Okapi gross revenue). Also assumes $<%= @emily_monthly %>/mo from Emily. Weeks highlighted in red have a net negative ending balance.</p>
+    <p>Emergency fund expiration (green rows): <strong><%= @efund_end_date.value %> (<%= @efund_week_count %> weeks, <%= @efund_month_count %> months)</strong></p>
   </div>
 </div>
 <div class="row">
@@ -100,6 +111,7 @@ from (
     <%= table @burn_down do |t|
       today = Date.today
       t.decorate /.*/ => StyleDecorator.new('background-color' => 'lightblue'), :if => ->(c,r){today = Date.today; start = r[0].value; endt = r[0].value + 7; today >= start && today < endt }
+      t.decorate /.*/ => StyleDecorator.new('background-color' => '#ccffcc'), :if => ->(c,r){r[-1].value <= @fund_balance.rows[0][0].value}
       t.decorate /.*/ => StyleDecorator.new('background-color' => '#ffcccc'), :if => ->(c,r){r[-1].value <= 0}
       t.link /Week/ => '/reports/register?week=:this&account=Assets:Schwab:Checking|Assets:amex'
     end %>
