@@ -171,9 +171,9 @@ from (
         (select abs(sum(amount)) from ledger where account = 'Liabilities:Loans:Mazda') as spent_amount
         union all
         select
-        'Assets:Funds:Emergency' as goal,
-        24000.0 as goal_amount,
-        (select abs(sum(amount)) from ledger where account = 'Assets:Funds:Emergency') as spent_amount
+        'Assets:Funds:Medical' as goal,
+        3000.0 as goal_amount,
+        (select abs(sum(amount)) from ledger where account = 'Assets:Funds:Medical') as spent_amount
     ) x
 <% end %>
 
