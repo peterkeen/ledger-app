@@ -1,3 +1,4 @@
+<script type="text/javascript" src="/public/js/canvasjs.min.js"></script>
 <% @okapi_weekly = params[:okapi_weekly] || 250 %>
 <% @emily_monthly = params[:emily_monthly] || 400 %>
 <% @unbudget = params[:unbudget] || 500 %>
@@ -103,6 +104,78 @@ from (
   <div class="span12">
     <p>This shows actual cash in and cash out of Schwab and Amex Savings accounts up to and including the current week (highlighted in blue). After the current week, expenses are projected from the budget, plus an extra $<%= @unbudget %> during the first week of the month to simulate health insurance + unbudget. Assumes a fixed $<%= @okapi_weekly %>/week income from Okapi revenue (which in turn assumes $<%= @okapi_weekly.to_i * 8 %>/mo Okapi gross revenue). Also assumes $<%= @emily_monthly %>/mo from Emily. Weeks highlighted in red have a net negative ending balance.</p>
     <p>Emergency fund expiration (green rows): <strong><%= @efund_end_date.value %> (<%= @efund_week_count %> weeks, <%= @efund_month_count %> months)</strong></p>
+  </div>
+</div>
+<div class="row">
+  <div class="span12" style="height: 500px">
+    <script type="text/javascript">
+      $(function() {
+        var chart = new CanvasJS.Chart('chart-container',
+        {
+          title: {
+            text: "Runway",
+            fontSize: 30
+          },
+          axisX:{
+            gridColor: "Silver",
+            tickColor: "silver",
+            valueFormatString: "YYYY/MM/DD"
+          }, 
+          data: [
+            {
+              type: 'line',
+              showInLegend: true,
+              lineThickness: 2,
+              name: 'Amount',
+              dataPoints: [
+              <% @burn_down.rows.each do |row| %>
+                <% @date = row[0].value; @val = sprintf("%0.2f", row[-1].value) %>
+                { x: new Date(<%= @date.year %>,<%= @date.month - 1%>,<%= @date.day %>), y: <%= @val%> },
+              <% end %>
+              ]
+            },
+            {
+              type: 'line',
+              showInLegend: false,
+              lineThickness: 2,
+              color: 'green',
+              dataPoints: [
+                <% @date = @efund_end_date.value %>
+                <% @min = @burn_down.rows.min_by { |r| r[-1].value }[-1].value ; @max = @burn_down.rows.max_by { |r| r[-1].value }[-1].value; %>
+                { x: new Date(<%= @date.year %>, <%= @date.month - 1 %>, <%= @date.day %>), y: <%= @min %> },
+                { x: new Date(<%= @date.year %>, <%= @date.month - 1 %>, <%= @date.day %>), y: <%= @max %> }
+              ],
+            },
+            {
+              type: 'line',
+              showInLegend: false,
+              lineThickness: 2,
+              color: 'blue',
+              dataPoints: [
+                <% @date = Date.today %>
+                <% @min = @burn_down.rows.min_by { |r| r[-1].value }[-1].value ; @max = @burn_down.rows.max_by { |r| r[-1].value }[-1].value; %>
+                { x: new Date(<%= @date.year %>, <%= @date.month - 1 %>, <%= @date.day %>), y: <%= @min %> },
+                { x: new Date(<%= @date.year %>, <%= @date.month - 1 %>, <%= @date.day %>), y: <%= @max %> }
+              ],
+            },
+            {
+              type: 'line',
+              showInLegend: false,
+              lineThickness: 2,
+              color: 'red',
+              dataPoints: [
+                <% @date = @end_date.value %>
+                <% @min = @burn_down.rows.min_by { |r| r[-1].value }[-1].value ; @max = @burn_down.rows.max_by { |r| r[-1].value }[-1].value; %>
+                { x: new Date(<%= @date.year %>, <%= @date.month - 1 %>, <%= @date.day %>), y: <%= @min %> },
+                { x: new Date(<%= @date.year %>, <%= @date.month - 1 %>, <%= @date.day %>), y: <%= @max %> }
+              ],
+            }
+          ]
+        });
+        chart.render();
+      });
+    </script>
+    <div id="chart-container" style="height: 400px: width: 100%"></div>
   </div>
 </div>
 <div class="row">

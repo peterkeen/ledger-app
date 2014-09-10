@@ -16,4 +16,5 @@ end
 
 run Rack::URLMap.new \
   '/' => protected_ledger,
+  '/public' => Rack::File.new('./public'),
   '/files' => Rack::File.new('/usr/local/var/repos/financials')
