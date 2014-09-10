@@ -1,7 +1,7 @@
 <script type="text/javascript" src="/public/js/canvasjs.min.js"></script>
 <% @okapi_weekly = params[:okapi_weekly] || 250 %>
 <% @emily_monthly = params[:emily_monthly] || 400 %>
-<% @unbudget = params[:unbudget] || 500 %>
+<% @unbudget = params[:unbudget] || 125 %>
 
 <% @fund_balance = query do %>
   select sum(amount) from ledger where account ~ 'Assets:Funds' and account != 'Assets:Funds:Emergency'
@@ -55,7 +55,7 @@ from (
     select
       week,
       week_num,
-      -1 * coalesce((select sum(amount) from budget_periods b where b.week = week_num and (x.week between from_date and to_date or (x.week >= from_date and to_date is null))), 0) - (case when week_num = 1 then <%= @unbudget %> else 0 end) as cash_out
+      -1 * coalesce((select sum(amount) from budget_periods b where b.week = week_num and (x.week between from_date and to_date or (x.week >= from_date and to_date is null))), 0) - <%= @unbudget %> as cash_out
     from (
       select
         week,
@@ -102,7 +102,7 @@ from (
 </div>
 <div class="row">
   <div class="span12">
-    <p>This shows actual cash in and cash out of Schwab and Amex Savings accounts up to and including the current week (highlighted in blue). After the current week, expenses are projected from the budget, plus an extra $<%= @unbudget %> during the first week of the month to simulate health insurance + unbudget. Assumes a fixed $<%= @okapi_weekly %>/week income from Okapi revenue (which in turn assumes $<%= @okapi_weekly.to_i * 8 %>/mo Okapi gross revenue). Also assumes $<%= @emily_monthly %>/mo from Emily. Weeks highlighted in red have a net negative ending balance.</p>
+    <p>This shows actual cash in and cash out of Schwab and Amex Savings accounts up to and including the current week (highlighted in blue). After the current week, expenses are projected from the budget, plus an extra $<%= @unbudget %> per week unbudget. Assumes a fixed $<%= @okapi_weekly %>/week income from Okapi revenue (which in turn assumes $<%= @okapi_weekly.to_i * 8 %>/mo Okapi gross revenue). Also assumes $<%= @emily_monthly %>/mo from Emily. Weeks highlighted in red have a net negative ending balance.</p>
     <p>Emergency fund expiration (green rows): <strong><%= @efund_end_date.value %> (<%= @efund_week_count %> weeks, <%= @efund_month_count %> months)</strong></p>
   </div>
 </div>
