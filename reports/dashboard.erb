@@ -153,11 +153,6 @@ end
   where
     account = 'Assets:Funds:Emergency'
 <% end %>
-<%
-  payday_bench = Date.parse(ENV['LEDGER_PAYDAY_BENCHMARK'])
-  @next_payday = payday_bench + (((Date.today() - payday_bench).to_f / 14.0).ceil * 14)
-  @days_til_next_payday = (@next_payday - Date.today()).to_f.ceil
-%>
 <% @goals = query do %>
 select
     goal as "Goal",
@@ -178,7 +173,7 @@ from (
 <% end %>
 
 <div class="page-header">
-  <h1>Dashboard <small>Updated <%= @last_updated %> (<a href="/reports/monthly_snapshot">B</a>: <span style="color: <%= @budget_color %>"><%= sprintf("$%0.2f", @budget_remaining) %></span> U: <span style="color: <%= @unbudgeted_color %>"><%= sprintf("$%0.2f", @unbudgeted_remaining) %></span>) Payday: <%= @next_payday.strftime %> (<%= @days_til_next_payday %> days)</small></h1>
+  <h1>Dashboard <small>Updated <%= @last_updated %> (<a href="/reports/monthly_snapshot">B</a>: <span style="color: <%= @budget_color %>"><%= sprintf("$%0.2f", @budget_remaining) %></span> U: <span style="color: <%= @unbudgeted_color %>"><%= sprintf("$%0.2f", @unbudgeted_remaining) %></span>)</small></h1>
 </div>
 <div class="row">
   <div class="span6">
