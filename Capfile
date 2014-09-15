@@ -12,7 +12,7 @@ role :web, "subspace.bugsplat.info"
 set :buildpack_url, "git@git.bugsplat.info:peter/bugsplat-buildpack-ruby-simple"
 
 set :user,        "peter"
-set :concurrency, "web=1"
+set :concurrency, "web=1,load=1"
 set :base_port,   6500
 set :use_ssl, true
 set :force_ssl, true

@@ -1,2 +1,2 @@
 web: bin/web
-load: bundle exec rake load
+load: bundle exec rake load_loop
