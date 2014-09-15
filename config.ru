@@ -44,7 +44,8 @@ repo = Grack::App.new(
 )
 
 run Rack::URLMap.new \
-  '/' => ledger,
   '/repo' => repo,
   '/public' => Rack::File.new('./public'),
-  '/files' => Rack::File.new('/usr/local/var/repos/financials')
+  '/files' => Rack::File.new('/usr/local/var/repos/financials'),
+  '/' => ledger
+
