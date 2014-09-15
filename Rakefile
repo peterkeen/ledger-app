@@ -25,8 +25,18 @@ end
 
 task :load_loop => :load_config do
   while true
-    last_update_db = LedgerWeb::Database.handle[:update_history].order(Sequel.desc(:updated_at)).first[:updated_at]
-    last_update_file = File.mtime(ENV['LEDGER_FILE'])
+    Dir.chdir File.join(ENV['PROJECT_ROOT'], '..') do
+      unless File.directory? 'clone'
+        system("git clone #{File.join(ENV['PROJECT_ROOT'], 'ledger.git')} clone")
+      else
+        Dir.chdir('clone') do
+          system("git pull origin master")
+        end
+      end
+    end
+
+    last_update_db = LedgerWeb::Database.handle[:update_history].order(Sequel.desc(:updated_at)).first[:updated_at].to_i
+    last_update_file = File.mtime(ENV['LEDGER_FILE']).utc.to_i
 
     puts "#{last_update_file} < #{last_update_db}"
 
@@ -36,15 +46,6 @@ task :load_loop => :load_config do
     end
 
     LedgerWeb::Database.handle.transaction do
-      Dir.chdir File.join(ENV['PROJECT_ROOT'], '..') do
-        unless File.directory? 'clone'
-          system("git clone #{File.join(ENV['PROJECT_ROOT'], 'ledger.git')} clone")
-        else
-          Dir.chdir('clone') do
-            system("git pull origin master")
-          end
-        end
-      end
       file = LedgerWeb::Database.dump_ledger_to_csv
       count = LedgerWeb::Database.load_database(file)
       puts "Loaded #{count} records"
