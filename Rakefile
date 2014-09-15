@@ -28,6 +28,8 @@ task :load_loop => :load_config do
     last_update_db = LedgerWeb::Database.handle[:update_history].order(Sequel.desc(:updated_at)).first[:updated_at]
     last_update_file = File.mtime(ENV['LEDGER_FILE'])
 
+    puts "#{last_update_file} < #{last_update_db}"
+
     if last_update_file < last_update_db
       sleep 30
       next
