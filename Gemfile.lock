@@ -1,19 +1,27 @@
+GIT
+  remote: git://github.com/peterkeen/grack.git
+  revision: 77ffad0fe9f45a68d1aac2be1502dafe1421113e
+  specs:
+    grack (0.1.0)
+      rack
+
 GEM
   remote: http://rubygems.org/
   specs:
     backports (3.3.3)
-    capistrano (2.15.5)
+    capistrano (2.12.0)
       highline
       net-scp (>= 1.0.0)
       net-sftp (>= 2.0.0)
       net-ssh (>= 2.0.14)
       net-ssh-gateway (>= 1.1.0)
-    capistrano-buildpack (0.0.10)
+    capistrano-buildpack (0.0.13)
     database_cleaner (1.1.1)
     diff-lcs (1.2.4)
     directory_watcher (1.5.1)
     eventmachine (1.0.3)
-    highline (1.6.19)
+    highline (1.6.21)
+    kgio (2.9.2)
     ledger_web (1.5.0)
       database_cleaner
       directory_watcher
@@ -24,16 +32,14 @@ GEM
       sinatra
       sinatra-contrib
       sinatra-session
-    net-scp (1.1.2)
+    net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-sftp (2.1.2)
       net-ssh (>= 2.6.5)
-    net-ssh (2.6.8)
+    net-ssh (2.9.1)
     net-ssh-gateway (1.2.0)
       net-ssh (>= 2.6.5)
     pg (0.16.0)
-    puma (2.5.0)
-      rack (>= 1.1, < 2.0)
     rack (1.5.2)
     rack-protection (1.5.0)
       rack
@@ -41,6 +47,7 @@ GEM
       rack
     rack-test (0.6.2)
       rack (>= 1.0)
+    raindrops (0.13.0)
     rspec (2.14.1)
       rspec-core (~> 2.14.0)
       rspec-expectations (~> 2.14.0)
@@ -64,13 +71,18 @@ GEM
     sinatra-session (1.0.0)
       sinatra (>= 1.0)
     tilt (1.4.1)
+    unicorn (4.8.3)
+      kgio (~> 2.6)
+      rack
+      raindrops (~> 0.7)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  capistrano
-  capistrano-buildpack
+  capistrano (= 2.12.0)
+  capistrano-buildpack (= 0.0.13)
+  grack!
   ledger_web (= 1.5.0)
-  puma
   rack-ssl
+  unicorn
