@@ -41,7 +41,7 @@ task :load_loop => :load_config do
     puts "#{last_update_file} < #{last_update_db}"
 
     if last_update_file < last_update_db
-      sleep 30
+      sleep 10
       next
     end
 
