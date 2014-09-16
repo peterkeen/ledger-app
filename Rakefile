@@ -45,11 +45,9 @@ task :load_loop => :load_config do
       next
     end
 
-    LedgerWeb::Database.handle.transaction do
-      file = LedgerWeb::Database.dump_ledger_to_csv
-      count = LedgerWeb::Database.load_database(file)
-      puts "Loaded #{count} records"
-    end
+    file = LedgerWeb::Database.dump_ledger_to_csv
+    count = LedgerWeb::Database.load_database(file)
+    puts "Loaded #{count} records"
   end    
 end
 
