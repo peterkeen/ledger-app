@@ -35,8 +35,8 @@ task :load_loop => :load_config do
       end
     end
 
-    last_update_db = LedgerWeb::Database.handle[:update_history].order(Sequel.desc(:updated_at)).first[:updated_at].to_i
-    last_update_file = File.mtime(ENV['LEDGER_FILE']).utc.to_i
+    last_update_db = LedgerWeb::Database.handle[:update_history].order(Sequel.desc(:updated_at)).first[:updated_at].strftime('%Y-%m-%d %H:%M:%S')
+    last_update_file = File.mtime(ENV['LEDGER_FILE']).strftime('%Y-%m-%d %H:%M:%S')
 
     puts "#{last_update_file} < #{last_update_db}"
 
