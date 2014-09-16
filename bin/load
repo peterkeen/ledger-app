@@ -1,0 +1,3 @@
+#!/bin/bash
+
+exec bundle exec rake load_loop 2>&1 | logger -t ledger-app-load
