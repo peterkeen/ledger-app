@@ -33,11 +33,11 @@ task :load_loop => :load_config do
       end
       Dir.chdir('clone') do
         system("git fetch -q orgin && git reset --hard -q origin/master")
-        last_update_file = Time.parse(`git log -1 --format='%ci'`).strftime('%Y-%m-%d %H:%M:%S')
+        last_update_file = Time.parse(`git log -1 --format='%ci'`).utc.strftime('%Y-%m-%d %H:%M:%S')
       end
     end
 
-    last_update_db = LedgerWeb::Database.handle[:update_history].order(Sequel.desc(:updated_at)).first[:updated_at].strftime('%Y-%m-%d %H:%M:%S')
+    last_update_db = LedgerWeb::Database.handle[:update_history].order(Sequel.desc(:updated_at)).first[:updated_at].utc.strftime('%Y-%m-%d %H:%M:%S')
 
 
     puts "#{last_update_file} < #{last_update_db}"
