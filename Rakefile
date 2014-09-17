@@ -24,25 +24,24 @@ task :load => :load_config do
 end
 
 task :load_loop => :load_config do
-  while true
-    last_update_file = nil
+  current_sha = nil
+  new_sha = nil
 
+  while true
     Dir.chdir File.join(ENV['PROJECT_ROOT'], '..') do
       unless File.directory? 'clone'
         system("git clone #{File.join(ENV['PROJECT_ROOT'], 'ledger.git')} clone")
       end
       Dir.chdir('clone') do
         system("git fetch -q origin && git reset --hard -q origin/master")
-        last_update_file = Time.parse(`git log -1 --format='%ci'`).utc.strftime('%Y-%m-%d %H:%M:%S')
+        new_sha = `git rev-parse master`
       end
     end
 
-    last_update_db = LedgerWeb::Database.handle["select updated_at::timestamp with time zone at time zone 'utc' as updated_at from update_history order by updated_at desc limit 1"].first[:updated_at].strftime('%Y-%m-%d %H:%M:%S')
+    if 
+    puts "#{current_sha} == #{new_sha}"
 
-
-    puts "#{last_update_file} < #{last_update_db}"
-
-    if last_update_file < last_update_db
+    if current_sha == new_sha
       sleep 10
       next
     end
@@ -50,6 +49,7 @@ task :load_loop => :load_config do
     file = LedgerWeb::Database.dump_ledger_to_csv
     count = LedgerWeb::Database.load_database(file)
     puts "Loaded #{count} records"
+    current_sha = new_sha
   end    
 end
 
