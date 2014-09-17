@@ -25,18 +25,20 @@ end
 
 task :load_loop => :load_config do
   while true
+    last_update_file = nil
+
     Dir.chdir File.join(ENV['PROJECT_ROOT'], '..') do
       unless File.directory? 'clone'
         system("git clone #{File.join(ENV['PROJECT_ROOT'], 'ledger.git')} clone")
       else
-        Dir.chdir('clone') do
-          system("git pull origin master")
-        end
+      Dir.chdir('clone') do
+        system("git pull origin master 2>&1 > /dev/null")
+        last_update_file = Time.parse(`git log -1 --format='%ci'`).strftime('%Y-%m-%d %H:%M:%S')
       end
     end
 
     last_update_db = LedgerWeb::Database.handle[:update_history].order(Sequel.desc(:updated_at)).first[:updated_at].strftime('%Y-%m-%d %H:%M:%S')
-    last_update_file = File.mtime(ENV['LEDGER_FILE']).utc.strftime('%Y-%m-%d %H:%M:%S')
+
 
     puts "#{last_update_file} < #{last_update_db}"
 
