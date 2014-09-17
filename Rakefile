@@ -32,7 +32,7 @@ task :load_loop => :load_config do
         system("git clone #{File.join(ENV['PROJECT_ROOT'], 'ledger.git')} clone")
       end
       Dir.chdir('clone') do
-        system("git pull origin master 2>&1 > /dev/null")
+        system("git pull origin master > /dev/null 2>&1")
         last_update_file = Time.parse(`git log -1 --format='%ci'`).strftime('%Y-%m-%d %H:%M:%S')
       end
     end
