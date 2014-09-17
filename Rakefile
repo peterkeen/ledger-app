@@ -38,7 +38,6 @@ task :load_loop => :load_config do
       end
     end
 
-    if 
     puts "#{current_sha} == #{new_sha}"
 
     if current_sha == new_sha
