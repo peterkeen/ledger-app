@@ -34,11 +34,9 @@ task :load_loop => :load_config do
       end
       Dir.chdir('clone') do
         system("git fetch -q origin && git reset --hard -q origin/master")
-        new_sha = `git rev-parse master`
+        new_sha = `git rev-parse master`.strip
       end
     end
-
-    puts "#{current_sha} == #{new_sha}"
 
     if current_sha == new_sha
       sleep 10
