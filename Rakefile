@@ -37,7 +37,7 @@ task :load_loop => :load_config do
       end
     end
 
-    last_update_db = LedgerWeb::Database.handle[:update_history].order(Sequel.desc(:updated_at)).first[:updated_at].utc.strftime('%Y-%m-%d %H:%M:%S')
+    last_update_db = LedgerWeb::Database.handle["select updated_at::timestamp with time zone at time zone 'utc' as updated_at from update_history order by updated_at desc limit 1"].first[:updated_at].strftime('%Y-%m-%d %H:%M:%S')
 
 
     puts "#{last_update_file} < #{last_update_db}"
