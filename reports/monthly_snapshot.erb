@@ -41,7 +41,7 @@ with inc as (
         account
     ) x
   )
-  select account as "Account", amount as "Amount" from inc
+  select account as "Account", amount as "Amount" from inc where round(amount, 0) != 0
   union all
   select 'Total' as "Account", sum(amount) as "Amount" from inc
 <% end %>
