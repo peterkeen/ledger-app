@@ -5,7 +5,7 @@ set :normalize_asset_timestamps, false
 set :application, "ledger-app"
 set :repository, "git@git.bugsplat.info:peter/ledger-app.git"
 set :scm, :git
-set :additional_domains, ['ledger-kodos.bugsplat.info']
+set :additional_domains, ['ledger.bugsplat.info']
 set :use_sudo, true
 
 role :web, "kodos.zrail.net"
