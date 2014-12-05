@@ -54,7 +54,7 @@ with budgeted as (
       coalesce(x.amount, 0) as "Spent",
       b.amount - coalesce(x.amount, 0) as "Diff"
   from
-  (select * from budget_months where xtn_month = '<%= @selected_month %>' and amount > 0) b
+  (select xtn_month, account, sum(amount) as amount from budget_months where xtn_month = '<%= @selected_month %>' and amount > 0 group by xtn_month, account) b
   left outer join (
       select
           xtn_month,
