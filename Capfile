@@ -3,13 +3,13 @@ require 'capistrano-buildpack'
 
 set :normalize_asset_timestamps, false
 set :application, "ledger-app"
-set :repository, "git@git.bugsplat.info:peter/ledger-app.git"
+set :repository, "git@git.zrail.net:peter/ledger-app.git"
 set :scm, :git
 set :additional_domains, ['ledger.bugsplat.info']
 set :use_sudo, true
 
 role :web, "kodos.zrail.net"
-set :buildpack_url, "git@git.bugsplat.info:peter/bugsplat-buildpack-ruby-simple"
+set :buildpack_url, "git@git.zrail.net:peter/bugsplat-buildpack-ruby-simple"
 
 set :user,        "peter"
 set :concurrency, "web=1,load=1"
