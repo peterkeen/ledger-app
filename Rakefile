@@ -55,7 +55,7 @@ task :migrate => :load_config do
 end
 
 task :server do
-  sh "env DATABASE_URL=postgres://ledger:password@192.168.1.2/ledger LEDGER_USERNAME=admin LEDGER_PASSWORD=foo LEDGER_PAYDAY_BENCHMARK=2013-01-18 EMERGENCY_FUND_TARGET=4 unicorn -p 9595"
+  sh "env DATABASE_URL=postgres://ledger:password@kodos.zrail.net/ledger LEDGER_USERNAME=admin LEDGER_PASSWORD=foo LEDGER_PAYDAY_BENCHMARK=2013-01-18 EMERGENCY_FUND_TARGET=4 unicorn -p 9595"
 end
 
 def one_row(query, bind_params=[])

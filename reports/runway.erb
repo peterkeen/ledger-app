@@ -2,6 +2,11 @@
 <% @okapi_weekly = params[:okapi_weekly] || 250 %>
 <% @emily_monthly = params[:emily_monthly] || 400 %>
 <% @unbudget = params[:unbudget] || 125 %>
+<%
+  @start_date = Date.today << 3
+  @start_date -= 1 until @start_date.wday == 1
+  @num_weeks = 65
+%>
 
 <% @fund_balance = query do %>
   select sum(amount) from ledger where account ~ 'Assets:Funds' and account != 'Assets:Funds:Emergency'
@@ -11,9 +16,9 @@
 with weeks as (
  select
    x,
-   '2014-01-06'::date + (x || ' weeks')::interval as xtn_date
+   '<%= @start_date %>'::date + (x || ' weeks')::interval as xtn_date
   from
-    generate_series(0,104) x
+    generate_series(0,<%= @num_weeks %>) x
 ),
 assets as (
   select
@@ -62,9 +67,9 @@ from (
         row_number() over (partition by date_trunc('month', week) order by week) as week_num
       from (
         select
-          ('2014-01-06'::date + (x || ' weeks')::interval)::date as week
+          ('<%= @start_date %>'::date + (x || ' weeks')::interval)::date as week
         from
-          generate_series(0,104) x
+          generate_series(0,<%= @num_weeks %>) x
       ) x
     ) x
     where                                    
@@ -82,10 +87,10 @@ from (
   @efund_end_date_row = @burn_down.rows.detect { |r| r[-1].value < @fund_balance.rows[0][0].value } || @burn_down.rows[-1]
   @efund_end_date = @efund_end_date_row[0]
   @efund_week_count = @burn_down.rows.select { |r| r[-1].value > @fund_balance.rows[0][0].value && r[0].value > Date.today }.length
-  @efund_month_count = @efund_week_count / 4
+  @efund_month_count = @efund_week_count / 4.0
 %>
 <div class="page-title">
-  <h1>Runway <small><%= @end_date.value %> (<%= @week_count %> weeks, <%= @month_count %> months)</small></h1>
+  <h1>Runway <small><%= @efund_end_date.value %> (<%= @efund_week_count %> weeks, <%= @efund_month_count %> months)</small></h1>
 </div>
 <div class="row">
   <div class="span12">
@@ -103,7 +108,7 @@ from (
 <div class="row">
   <div class="span12">
     <p>This shows actual cash in and cash out of Schwab and Amex Savings accounts up to and including the current week (highlighted in blue). After the current week, expenses are projected from the budget, plus an extra $<%= @unbudget %> per week unbudget. Assumes a fixed $<%= @okapi_weekly %>/week income from Okapi revenue (which in turn assumes $<%= @okapi_weekly.to_i * 8 %>/mo Okapi gross revenue). Also assumes $<%= @emily_monthly %>/mo from Emily. Weeks highlighted in red have a net negative ending balance.</p>
-    <p>Emergency fund expiration (green rows): <strong><%= @efund_end_date.value %> (<%= @efund_week_count %> weeks, <%= @efund_month_count %> months)</strong></p>
+    <p>Total cash exhaustion (red rows): <strong><%= @end_date.value %> (<%= @week_count %> weeks, <%= @month_count %> months)</strong></p>
   </div>
 </div>
 <div class="row">
