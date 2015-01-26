@@ -9,8 +9,19 @@ class BudgetSummaryReport < LedgerWeb::Report
           x.account as account,
           x.amount as expense,
           b.amount as budgeted
-      from
-      budget_months b
+      from (
+          select
+               xtn_month,
+               account,
+               sum(amount) as amount
+          from
+               budget_months
+          where
+               amount > 0
+          group by
+               xtn_month,
+               account
+      ) b 
       left outer join (
           select
               xtn_month,

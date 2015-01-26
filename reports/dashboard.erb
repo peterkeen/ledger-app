@@ -1,3 +1,5 @@
+<% params[:month] = Date.new(Date.today.year, Date.today.month, 1) %>
+
 <% @last_bills = query do %>
   select
     account as "Account",
@@ -133,7 +135,7 @@ end
   ) x;
 <% end %>
 
-<% @budget = BudgetSummaryReport.run %>
+<% @budget = BudgetSummaryReport.run(1) %>
 <% @budget_remaining = (@budget.rows[0][3].value || 0) %>
 <% @budget_color = @budget_remaining > 0 ? 'green' : 'red' %>
 <% @unbudgeted_remaining = @unbudgeted.rows[0][0].value %>
