@@ -3,6 +3,7 @@ require 'digest/sha1'
 LedgerWeb::Config.new do |config|
   config.set :database_url, ENV['DATABASE_URL']
   config.set :index_report, :dashboard
+  config.set :additional_view_directories, [File.join(File.dirname(__FILE__), 'views')]
 
   config.add_hook :before_insert_row do |row|
     reference_date = Date.new(2011, 4, 15)

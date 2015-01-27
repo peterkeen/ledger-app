@@ -1,0 +1,88 @@
+<% @unbudgeted = query do %>
+  select
+    real_money - funds + liabilities
+  from (
+    select
+      sum(case when account in ('Assets:Schwab:Checking', 'Assets:Amex', 'Assets:Receivable:Emily') then amount else 0 end) as real_money,
+      sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
+      sum(case when account in ('Liabilities:Chase:SP', 'Liabilities:Payable') then amount else 0 end) as liabilities
+    from
+      ledger
+  ) x;
+<% end %>
+
+<% @budget = BudgetSummaryReport.run(1) %>
+<% @budget_remaining = (@budget.rows[0][3].value || 0) %>
+<% @budget_color = @budget_remaining > 0 ? '#00ff00' : '#ff0000' %>
+<% @unbudgeted_remaining = @unbudgeted.rows[0][0].value %>
+<% @unbudgeted_color = @unbudgeted_remaining > 0 ? '#00ff00' : '#ff0000' %>
+<% @budget_float = 500 %>
+<% @budget_total = @budget.rows[0][1].value + @budget_float %>
+
+<% @last_updated_report = query do %>
+select
+    max(updated_at at time zone 'UTC')
+from
+    update_history
+<% end %>
+<%
+def relative_time(start_time)
+  diff_seconds = Time.now.utc - start_time.utc
+  case diff_seconds
+  when 0 .. 59
+    return"#{diff_seconds.to_i} seconds ago"
+  when 60 .. (3600-1)
+    return "#{(diff_seconds/60).to_i} minutes ago"
+  when 3600 .. (3600*24-1)
+    return "#{(diff_seconds/3600).to_i} hours ago"
+  when (3600*24) .. (3600*24*30) 
+    return "#{(diff_seconds/(3600*24)).to_i} days ago"
+  else
+    return start_time.strftime("%m/%d/%Y")
+  end
+end
+@last_updated = relative_time(@last_updated_report.rows[0][0].value)
+%>
+<html>
+  <head>
+    <title>Finances</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/ledger.css">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <script type="text/javascript" src="/js/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="/js/jquery.tablesorter.min.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/d3.min.js"></script>
+    <script type="text/javascript">
+      $(function() {
+        $("table.sorted").tablesorter();
+      });      
+    </script>
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="/">Finances</a>
+          <ul class="nav">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <% @reports.each do |report| %>
+                <li><a href="/reports/<%= report[0] %>"><%= report[1] %></a></li>
+                <% end %>
+              </ul>
+            </li>
+            <li><p class="navbar-text">Updated <%= @last_updated %></li>
+          </ul>
+          <ul class="nav pull-right">
+           <li><p class="navbar-text" style="font-weight: bold">(<a href="/reports/monthly_snapshot">B</a>: <span style="color: <%= @budget_color %>"><%= sprintf("$%0.2f", @budget_remaining) %></span> C: <span style="color: <%= @unbudgeted_color %>"><%= sprintf("$%0.2f", @unbudgeted_remaining) %></span>)</p></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <%= yield %>
+    </div>
+  </body>
+</html>
