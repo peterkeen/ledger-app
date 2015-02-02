@@ -1,6 +1,9 @@
 class BudgetSummaryReport < LedgerWeb::Report
-  def self.run(limit=nil)
+  def self.run(limit=nil, force_now=false)
     limit_sql = limit ? "limit #{limit.to_i}" : ""
+    if force_now
+      params[:month] = Date.new(Date.today.year, Date.today.month, 1)
+    end
     month_where = params[:month] ? 'xtn_month = :month' : '1 = 1'
     from_query("""
       with budget_summary as (

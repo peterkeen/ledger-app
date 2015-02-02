@@ -11,7 +11,7 @@
   ) x;
 <% end %>
 
-<% @budget = BudgetSummaryReport.run(1) %>
+<% @budget = BudgetSummaryReport.run(1, true) %>
 <% @budget_remaining = (@budget.rows[0][3].value || 0) %>
 <% @budget_color = @budget_remaining > 0 ? '#00ff00' : '#ff0000' %>
 <% @unbudgeted_remaining = @unbudgeted.rows[0][0].value %>
