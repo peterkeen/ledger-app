@@ -238,7 +238,7 @@ from
     <%= table @funds do |t|
           t.link /Fund/ => "/reports/register?account=:0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
-          t.decorate /Balance/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){c.value || 0 < 0}
+          t.decorate /Balance/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){(c.value || -1) < 0}
         end
     %>
   </div>
