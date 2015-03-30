@@ -28,7 +28,7 @@ class RegisterReport < LedgerWeb::Report
           note as \"Payee\",
           amount as \"Amount\",
           cleared as \"Cleared\",
-          sum(amount) over (order by xtn_date rows unbounded preceding) as \"Sum\",
+          sum(amount) over (order by xtn_date, xtn_id rows unbounded preceding) as \"Sum\",
           running_sum as \"Balance\"
       from (
           select
@@ -40,17 +40,18 @@ class RegisterReport < LedgerWeb::Report
               note,
               amount,
               cleared,
-              sum(amount) over (order by xtn_date rows unbounded preceding) as running_sum
+              sum(amount) over (order by xtn_date, xtn_id rows unbounded preceding) as running_sum
           from
               ledger
           where
               #{inner_where_clause}
           order by
-              xtn_date desc
+              xtn_date desc,
+              xtn_id desc
        ) x
        where
           #{outer_where_clause}
-       order by xtn_date desc
+       order by xtn_date desc, xtn_id desc
     """
     from_query(query)
   end
