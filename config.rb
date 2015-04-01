@@ -1,4 +1,5 @@
 require 'digest/sha1'
+require 'json'
 
 LedgerWeb::Config.new do |config|
   config.set :database_url, ENV['DATABASE_URL']
