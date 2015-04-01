@@ -3,9 +3,31 @@ require 'digest/sha1'
 LedgerWeb::Config.new do |config|
   config.set :database_url, ENV['DATABASE_URL']
   config.set :index_report, :dashboard
+  config.set :ledger_format, "%(quoted(xact.beg_line)),%(quoted(date)),%(quoted(payee)),%(quoted(account)),%(quoted(commodity(scrub(display_amount)))),%(quoted(quantity(scrub(display_amount)))),%(quoted(cleared)),%(quoted(virtual)),%(quoted(join(note | xact.note))),%(quoted(cost)),%(quoted(code)),%(quoted(filename))\n"
+  config.set :ledger_columns, [ :xtn_id, :xtn_date, :note, :account, :commodity, :amount, :cleared, :virtual, :tags, :cost, :checknum, :filename ]  
   config.set :additional_view_directories, [File.join(File.dirname(__FILE__), 'views')]
 
+  files_seen = {}
+  file_count = 0
+
   config.add_hook :before_insert_row do |row|
+    filename = row[:filename]
+    unless files_seen[filename]
+      file_count += 1
+      files_seen[filename] = file_count
+    end
+
+    row[:xtn_id] = row[:xtn_id].to_i + (files_seen[filename] * 1_000_000)
+
+    tags_hash = {}
+    row[:tags].strip.split('\n').each do |tag|
+      k,v = tag.split(/:\s+/, 2)
+      k = k.strip
+      v = v.strip
+      tags_hash[k] = Float(v) rescue v
+    end
+    row[:jtags] = tags_hash.to_json
+
     reference_date = Date.new(2011, 4, 15)
 
     xtn_date = Date.strptime(row[:xtn_date], "%Y/%m/%d")
