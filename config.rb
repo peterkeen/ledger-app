@@ -23,6 +23,8 @@ LedgerWeb::Config.new do |config|
     tags_hash = {}
     row[:tags].strip.split('\n').each do |tag|
       k,v = tag.split(/:\s+/, 2)
+      next if k.nil? || v.nil?
+
       k = k.strip
       v = v.strip
       tags_hash[k] = Float(v) rescue v
