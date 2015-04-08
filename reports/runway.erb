@@ -1,7 +1,7 @@
 <script type="text/javascript" src="/public/js/canvasjs.min.js"></script>
 <% @okapi_weekly = params[:okapi_weekly] || 250 %>
-<% @emily_monthly = params[:emily_monthly] || 400 %>
-<% @unbudget = params[:unbudget] || 125 %>
+<% @emily_weekly = params[:emily_weekly] || 250 %>
+<% @unbudget = params[:unbudget] || 325 %>
 <%
   @start_date = Date.today << 3
   @start_date -= 1 until @start_date.wday == 1
@@ -53,9 +53,9 @@ select
 from (
   select
      week,
-     <%= @okapi_weekly %> + case when week_num = 1 then <%= @emily_monthly %> else 0 end as cash_in,
+     <%= @okapi_weekly %> + <%= @emily_weekly %> as cash_in,
      cash_out,
-     sum(cash_out + <%= @okapi_weekly %> + case when week_num = 1 then <%= @emily_monthly %> else 0 end) over (rows unbounded preceding) as ending
+     sum(cash_out + <%= @okapi_weekly %> + <%= @emily_weekly %>) over (rows unbounded preceding) as ending
   from (
     select
       week,
@@ -95,8 +95,8 @@ from (
 <div class="row">
   <div class="span12">
     <form class="form form-inline">
-      <label for="emily_monthly">Emily Monthly</label>
-      <input type="text" id="emily_monthly" name="emily_monthly" value="<%= @emily_monthly %>">
+      <label for="emily_weekly">Emily Weekly</label>
+      <input type="text" id="emily_monthly" name="emily_weekly" value="<%= @emily_weekly %>">
       <label for="okapi_weekly">Okapi Weekly</label>
       <input type="text" id="okapi_weekly" name="okapi_weekly" value="<%= @okapi_weekly %>">
       <label for="unbudget">Unbudget</label>
@@ -107,7 +107,7 @@ from (
 </div>
 <div class="row">
   <div class="span12">
-    <p>This shows actual cash in and cash out of Schwab and Amex Savings accounts up to and including the current week (highlighted in blue). After the current week, expenses are projected from the budget, plus an extra $<%= @unbudget %> per week unbudget. Assumes a fixed $<%= @okapi_weekly %>/week income from Okapi revenue (which in turn assumes $<%= @okapi_weekly.to_i * 8 %>/mo Okapi gross revenue). Also assumes $<%= @emily_monthly %>/mo from Emily. Weeks highlighted in green are depleting non-emergency savings funds.</p>
+    <p>This shows actual cash in and cash out of Schwab and Amex Savings accounts up to and including the current week (highlighted in blue). After the current week, expenses are projected from the budget, plus an extra $<%= @unbudget %> per week unbudget. Assumes a fixed $<%= @okapi_weekly %>/week income from Okapi revenue (which in turn assumes $<%= @okapi_weekly.to_i * 8 %>/mo Okapi gross revenue). Also assumes $<%= @emily_weekly %>/week from Emily. Weeks highlighted in green are depleting non-emergency savings funds.</p>
     <p>Total cash exhaustion (red rows): <strong><%= @end_date.value %> (<%= @week_count %> weeks, <%= @month_count %> months)</strong></p>
   </div>
 </div>
