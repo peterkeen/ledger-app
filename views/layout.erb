@@ -3,7 +3,7 @@
     real_money - funds + liabilities
   from (
     select
-      sum(case when account in ('Assets:Schwab:Checking', 'Assets:Amex', 'Assets:Receivable:Emily') then amount else 0 end) as real_money,
+      sum(case when account ~ '(Assets:Schwab:Checking|Assets:Amex|Assets:Receivable:Emily|Assets:BofA)' then amount else 0 end) as real_money,
       sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
       sum(case when account in ('Liabilities:Chase:SP', 'Liabilities:Payable') then amount else 0 end) as liabilities
     from

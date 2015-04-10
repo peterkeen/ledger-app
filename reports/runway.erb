@@ -28,7 +28,7 @@ assets as (
   from
     ledger
   where
-    account in ('Assets:Schwab:Checking', 'Assets:Amex')
+    account ~ '(Assets:Schwab:Checking|Assets:Amex|Assets:BofA)'
   order by
     xtn_date,
     amount

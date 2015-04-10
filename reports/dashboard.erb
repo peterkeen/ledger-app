@@ -127,7 +127,7 @@ end
     real_money - funds + liabilities
   from (
     select
-      sum(case when account in ('Assets:Schwab:Checking', 'Assets:Amex', 'Assets:Receivable:Emily') then amount else 0 end) as real_money,
+      sum(case when account ~ '(Assets:Schwab:Checking|Assets:Amex|Assets:BofA|Assets:Receivable:Emily)' then amount else 0 end) as real_money,
       sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
       sum(case when account in ('Liabilities:Chase:SP', 'Liabilities:Payable') then amount else 0 end) as liabilities
     from
@@ -143,7 +143,7 @@ end
 <% @budget_float = 1300 %>
 <% @budget_total = @budget.rows[0][1].value + @budget_float %>
 
-<% @emergency_fund_target = 4 %>
+<% @emergency_fund_target = 6 %>
 <% @emergency_fund = query do %>
   select
     sum(amount) as "Emergency Fund",
