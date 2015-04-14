@@ -1,0 +1,246 @@
+<% @selected_year = params[:year].to_s == "" ? Date.new(Date.today.year, 1, 1) : Date.parse(params[:year]) %>
+
+<% @years = query do %>
+  select
+    xtn_year
+  from
+    accounts_years
+  group by
+    xtn_year
+  order by
+    xtn_year desc
+<% end %>
+
+<% @income = query do %>
+with inc as (
+    select
+      'Salary (after taxes and retirement)' as account,
+      sum(amount) as amount
+    from
+      ledger
+    where
+      xtn_year = '<%= @selected_year %>'
+      and account ~ 'Assets:.*:Checking'
+      and note ~ 'Salary'
+    union all
+    select
+      *
+    from (
+      select
+        account,
+        -1 * sum(amount) as amount
+      from
+        ledger
+      where
+        account ~ '^Income'
+        and account !~ '^Income:Salary'
+        and xtn_year = '<%= @selected_year %>'
+      group by
+        account
+      order by
+        account
+    ) x
+  )
+  select account as "Account", amount as "Amount" from inc where round(amount, 0) != 0
+  union all
+  select 'Total' as "Account", sum(amount) as "Amount" from inc
+<% end %>
+
+<% @budgeted_expenses = query do %>
+with budgeted as (  
+  select
+      b.account as "Account",
+      b.amount as "Budget",
+      coalesce(x.amount, 0) as "Spent",
+      b.amount - coalesce(x.amount, 0) as "Diff"
+  from
+  (select date_trunc('year', xtn_month) as xtn_year, account, sum(amount) as amount from budget_months where date_trunc('year', xtn_month) = '<%= @selected_year %>' and amount > 0 group by date_trunc('year', xtn_month), account) b
+  left outer join (
+      select
+          xtn_year,
+          account,
+          sum(amount) as amount
+      from
+          ledger
+      where
+          account in (select distinct account from budget_periods)
+          and xtn_year = '<%= @selected_year %>'
+          and tags !~ 'Reimburseable'
+          and tags !~ 'nobudget'
+      group by
+          xtn_year,
+          account
+  ) x using (account)
+  order by
+     b.account
+)
+select
+  *
+from
+  budgeted
+union all
+select
+  'Total' as "Account",
+  sum("Budget") as "Budget",
+  sum("Spent") as "Spent",
+  sum("Diff") as "Diff"
+from
+  budgeted
+<% end %>
+
+<% @unbudgeted_expenses = query do %>
+  with ubexp as (
+    select
+      account as "Account",
+      sum(amount) as "Amount"
+    from
+      expenses
+    where (
+        (account not in (select account from budget_months where date_trunc('year', xtn_month) = '<%= @selected_year %>'))
+        or
+        (account in (select account from budget_months where date_trunc('year', xtn_month) = '<%= @selected_year %>') and tags ~ 'nobudget: true')
+      )
+      and note !~ 'Salary'
+      and tags !~ 'skipunbudget: true'
+      and xtn_year = '<%= @selected_year %>'
+    group by
+      account
+    order by
+      account
+  )
+  select
+    *
+  from
+    ubexp
+  union all
+  select
+    'Total' as "Account",
+    sum("Amount") as "Amount"
+  from
+    ubexp
+<% end %>
+
+<% @funds = query do %>
+  with funds as (
+    select
+      account as "Fund",
+      sum(case when xtn_year = '<%= @selected_year %>' then amount else 0 end) as "Amount",
+      sum(amount) as "Balance"
+    from
+      ledger
+    where
+      account ~ '^Assets:Funds'
+      and xtn_year <= '<%= @selected_year %>'
+    group by
+      account
+    having
+      round(sum(case when xtn_year = '<%= @selected_year %>' then amount else 0 end)) != 0 or round(sum(amount)) != 0
+    order by
+      account
+  )
+  select * from funds
+  union all
+  select 'Total' as "Fund", sum("Amount") as "Amount", sum("Balance") as "Balance" from funds
+<% end %>
+
+<div class="page-title">
+  <h1>Yearly Snapshot</h1>
+</div>
+<div class="row">
+  <div class="span12">
+    <form class="form form-inline">    
+      <select name="year" class="input">
+        <option value="">Current Year</option>
+        <% @years.each do |row| %>
+          <option value="<%= row[0].value %>" <%= (@selected_year == row[0].value) ? "selected" : "" %>><%= row[0].value %></option>
+        <% end %>
+      </select>
+      <input type="submit" value="Update" class="btn">
+    </form>
+  </div>
+  <div class="span12">
+    <h4>Summary</h4>
+    <table class="table table-striped table-hover table-bordered table-condensed">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th><span class="pull-right">Amount</span></th>
+        </tr>
+      </thead>
+      <%
+        @income_value = (@income.rows[-1][1].value rescue 0) || 0
+        @budgeted_value = (@budgeted_expenses.rows[-1][2].value rescue 0) || 0
+        @budgeted_diff = (@budgted_expenses.rows[-1][3].value rescue 0) || 0
+        @unbudgeted_value = (@unbudgeted_expenses.rows[-1][1].value rescue 0) || 0
+        @funds_value = (@funds.rows[-1][1].value rescue 0) || 0
+      %>
+      <tbody>
+        <tr>
+          <td>Income</td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", @income_value) %></span></td>
+        </tr>
+        <tr>
+          <td>Budgeted Expenses</td>
+          <td><span class="pull-right"><span style="<%= @budgeted_diff > 0 ? 'color: red' : ''%>"><%= sprintf("%0.2f", @budgeted_value) %></span></span></td>
+        </tr>
+        <tr>
+          <td>Unbudgeted Expenses</td>
+          <td><span class="pull-right"><span style="<%= @unbudgeted_value > 500 ? 'color: red' : '' %>"><%= sprintf("%0.2f", @unbudgeted_value) %></span></span></td>
+        </tr>
+        <tr>
+          <td>Funds</td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", @funds_value) %></span></td>
+        </tr>
+        <tr>
+          <td><strong>Net Cash</strong></td>
+          <td><span class="pull-right"><strong><%= sprintf("%0.2f", @income_value - (@budgeted_value + @unbudgeted_value) - @funds_value) %></strong></span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="span6">
+    <h4>Income</h4>
+    <%= @income.error %>
+    <%= table @income do |t|
+          t.link /Account/ => "/reports/register?account=:0&year=#{@selected_year}", :if => ->(c,r){!(c.text =~ /(Salary|Total)/)}
+          t.link /Account/ => "/reports/register?account=Income:Salary&year=#{@selected_year}", :if => ->(c,r){c.text =~ /Salary/}
+          t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+        end
+    %>
+  </div>
+  <div class="span6">
+    <h4>Funds</h4>
+    <%= @funds.error %>
+    <%= table @funds do |t|
+          t.link /Fund/ => "/reports/register?account=:0&year=#{@selected_year}&cleared=", :if => ->(c,r){c.text != "Total"}
+          t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+          t.decorate /Balance/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){(c.value || -1) < 0}
+        end
+    %>
+  </div>
+  <div class="span12">
+    <h4>Budgeted Expenses</h4>
+    <%= @budgeted_expenses.error %>
+    <%= table @budgeted_expenses do |t|
+          t.decorate /Account/ => ExpensesDecorator.new(year: @selected_year, cleared: '')
+          t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+        end
+    %>    
+    <h4>Unbudgeted Expenses</h4>
+    <%= @unbudgeted_expenses.error %>
+    <%= table @unbudgeted_expenses do |t|
+          t.decorate /Account/ => ExpensesDecorator.new(year: @selected_year, cleared: '')
+          t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+        end
+    %>
+  </div>
+</div>
+
+
+<style type="text/css">
+@media print {
+  a[href]:after{content:"";}
+  input { display: none !important }
+  select { display: none !important }
+}
+</style>
