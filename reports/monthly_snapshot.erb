@@ -143,30 +143,6 @@ from
   select 'Total' as "Fund", sum("Amount") as "Amount", sum("Balance") as "Balance" from funds
 <% end %>
 
-<% @balances = query do %>
-  select
-    account as "Account",
-    sum(case when xtn_month <= '<%= @selected_month %>' then amount else 0 end) as "<%= @selected_month %>",
-    sum(case when xtn_month <= '<%= @selected_month << 1 %>' then amount else 0 end) as "<%= @selected_month << 1 %>",
-    sum(case when xtn_month <= '<%= @selected_month << 2 %>' then amount else 0 end) as "<%= @selected_month << 2 %>",
-    sum(case when xtn_month <= '<%= @selected_month << 12 %>' then amount else 0 end) as "<%= @selected_month << 12 %>",
-    sum(case when xtn_month <= '<%= @selected_month << 24 %>' then amount else 0 end) as "<%= @selected_month << 24 %>"
-  from
-    ledger
-  where
-    account in (
-      'Assets:Schwab:Checking',
-      'Assets:Amex',
-      'Liabilities:Loans:Mazda',
-      'Liabilities:Loans:Mortgage',
-      'Liabilities:Chase:SP'
-    )
-  group by
-    account
-  order by
-    account
-<% end %>
-
 <div class="page-title">
   <h1>Monthly Snapshot</h1>
 </div>
@@ -260,9 +236,6 @@ from
           t.decorate /Amount/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){c.value && c.value >= 100 && r[0].text != 'Total'}
         end
     %>
-    <h4>Account Balances</h4>
-    <%= @balances.error %>
-    <%= table @balances %>
   </div>
 </div>
 
