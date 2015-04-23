@@ -103,6 +103,7 @@ from
       and note !~ 'Salary'
       and tags !~ 'skipunbudget: true'
       and xtn_month = '<%= @selected_month %>'
+      and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and xtn_month = '<%= @selected_month %>')
     group by
       account
     order by
@@ -123,8 +124,10 @@ from
 <% @funds = query do %>
   with funds as (
     select
-      account as "Fund",
-      sum(case when xtn_month = '<%= @selected_month %>' then amount else 0 end) as "Amount",
+      replace(account, 'Assets:Funds:', '') as "Fund",
+      sum(case when amount > 0 and xtn_month = '<%= @selected_month %>' then amount else 0 end) as "In",
+      sum(case when amount < 0 and xtn_month = '<%= @selected_month %>' then amount else 0 end) as "Out", 
+      sum(case when xtn_month = '<%= @selected_month %>' then amount else 0 end) as "Net",
       sum(amount) as "Balance"
     from
       ledger
@@ -140,7 +143,7 @@ from
   )
   select * from funds
   union all
-  select 'Total' as "Fund", sum("Amount") as "Amount", sum("Balance") as "Balance" from funds
+  select 'Total' as "Fund", sum("In") as "In", sum("Out") as "Out", sum("Net") as "Net", sum("Balance") as "Balance" from funds
 <% end %>
 
 <div class="page-title">
@@ -172,7 +175,7 @@ from
         @budgeted_value = (@budgeted_expenses.rows[-1][2].value rescue 0) || 0
         @budgeted_diff = (@budgted_expenses.rows[-1][3].value rescue 0) || 0
         @unbudgeted_value = (@unbudgeted_expenses.rows[-1][1].value rescue 0) || 0
-        @funds_value = (@funds.rows[-1][1].value rescue 0) || 0
+        @funds_value = (@funds.rows[-1][3].value rescue 0) || 0
       %>
       <tbody>
         <tr>
@@ -209,12 +212,13 @@ from
     %>
   </div>
   <div class="span6">
-    <h4>Funds</h4>
-    <%= @funds.error %>
-    <%= table @funds do |t|
-          t.link /Fund/ => "/reports/register?account=:0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
+    <h4>Unbudgeted Expenses</h4>
+    <%= @unbudgeted_expenses.error %>
+    <%= table @unbudgeted_expenses do |t|
+          t.decorate /Account/ => ExpensesDecorator.new(month: @selected_month, cleared: '')
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
-          t.decorate /Balance/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){(c.value || -1) < 0}
+          t.decorate /Amount/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){c.value && c.value >= 500 && r[0].text == 'Total'}
+          t.decorate /Amount/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){c.value && c.value >= 100 && r[0].text != 'Total'}
         end
     %>
   </div>
@@ -227,13 +231,12 @@ from
           t.decorate /Diff/ => StyleDecorator.new(color: 'red'), :if => lambda { |c,r| c.value < 0 }
         end
     %>
-    <h4>Unbudgeted Expenses</h4>
-    <%= @unbudgeted_expenses.error %>
-    <%= table @unbudgeted_expenses do |t|
-          t.decorate /Account/ => ExpensesDecorator.new(month: @selected_month, cleared: '')
+    <h4>Funds</h4>
+    <%= @funds.error %>
+    <%= table @funds do |t|
+          t.link /Fund/ => "/reports/register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
-          t.decorate /Amount/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){c.value && c.value >= 500 && r[0].text == 'Total'}
-          t.decorate /Amount/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){c.value && c.value >= 100 && r[0].text != 'Total'}
+          t.decorate /Balance/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){(c.value || -1) < 0}
         end
     %>
   </div>
