@@ -6,6 +6,11 @@
 <% @months = query do %>
   select xtn_month from accounts_months group by xtn_month order by xtn_month desc
 <% end %>
+<% if params[:xtn_id] %>
+  <% @xtn_metadata = query do %>
+    select jtags from ledger where xtn_id = :xtn_id
+  <% end %>
+<% end %>
 <div class="page-header">
   <h1>Register</h1>
 </div>
@@ -44,5 +49,12 @@
         end
     %>
   </div>
-</div>  
-
+</div>
+<% if @xtn_metadata %>
+  <div class="row">
+    <div class="span12">
+      <h4>Metadata</h4>
+      <pre><code><%= @xtn_metadata.rows[0][0].value %></code></pre>
+    </div>
+  </div>
+<% end %>
