@@ -21,6 +21,7 @@ LedgerWeb::Config.new do |config|
     end
 
     row[:xtn_id] = row[:xtn_id].to_i + (config.get(:files_seen)[filename] * 1_000_000)
+    p row
 
     tags_hash = {}
     row[:tags].strip.split('\n').each do |tag|
