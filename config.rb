@@ -8,8 +8,8 @@ LedgerWeb::Config.new do |config|
   config.set :ledger_columns, [ :xtn_id, :xtn_date, :note, :account, :commodity, :amount, :cleared, :virtual, :tags, :cost, :checknum, :filename ]  
   config.set :additional_view_directories, [File.join(File.dirname(__FILE__), 'views')]
 
-  config.set :files_seen = {}
-  config.set :file_count = 0
+  config.set :files_seen, {}
+  config.set :file_count, 0
 
   config.add_hook :before_insert_row do |row|
     filename = row[:filename]
