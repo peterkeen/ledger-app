@@ -15,8 +15,9 @@ LedgerWeb::Config.new do |config|
     filename = row[:filename]
     unless config.get(:files_seen)[filename]
       count = config.get(:file_count)
-      config.set(:file_count, config.get(:file_count) + 1)
-      config.get(:files_seen)[filename] = file_count
+      count += 1
+      config.set(:file_count, count)
+      config.get(:files_seen)[filename] = count
     end
 
     row[:xtn_id] = row[:xtn_id].to_i + (config.get(:files_seen)[filename] * 1_000_000)
