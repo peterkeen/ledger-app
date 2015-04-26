@@ -15,7 +15,7 @@
       from
         ledger
       where
-        account ~ 'Expenses:(Utils|Cable|Interest:Mortgage|Interest:Mazda)'
+        account ~ 'Expenses:(Utils|Interest:Mortgage)'
         and account != 'Expenses:Utils:Water'
         and account !~ ':Fees'
       group by
