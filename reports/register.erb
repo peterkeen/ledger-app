@@ -6,7 +6,7 @@
 <% @months = query do %>
   select xtn_month from accounts_months group by xtn_month order by xtn_month desc
 <% end %>
-<% if params[:xtn_id] %>
+<% if params[:xtn_id] && params[:xtn_id] != '' %>
   <% @xtn_metadata = query do %>
     select jtags from ledger where xtn_id = :xtn_id
   <% end %>
