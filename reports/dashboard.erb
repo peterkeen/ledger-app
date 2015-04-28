@@ -63,21 +63,50 @@
  from current_accounts    
 <% end %>
 
-<% @fund_levels = query do %>
- select
-     replace(account, 'Assets:Funds:', '') as "Account",
-     sum(amount) as "Balance"
- from
-     ledger
- where
-     account ~ 'Assets:Funds'
-     and account !~ 'Assets:Funds:Emergency'
- group by
-     account
- having
-     round(sum(amount)) != 0
- order by
-     account
+<% @long_term_funds_regex = "Assets:Funds:(Travel|House|Furniture|Emergency|Bike|Car|Medical)" %>
+
+<% @funds = query do %>
+  with funds as (
+    select
+      replace(account, 'Assets:Funds:', '') as "Fund",
+      sum(amount) as "Balance"
+    from
+      ledger
+    where
+      account ~ '^Assets:Funds'
+      and account !~ '<%= @long_term_funds_regex %>'
+    group by
+      account
+    having
+      round(sum(amount)) != 0
+    order by
+      account
+  )
+  select * from funds
+  union all
+  select 'Total' as "Fund", sum("Balance") as "Balance" from funds    
+<% end %>
+
+<% @long_term_funds = query do %>
+  with funds as (
+    select
+      replace(account, 'Assets:Funds:', '') as "Fund",
+      sum(amount) as "Balance"
+    from
+      ledger
+    where
+      account ~ '^Assets:Funds'
+      and account ~ '<%= @long_term_funds_regex %>'
+    group by
+      account
+    having
+      round(sum(amount)) != 0
+    order by
+      account
+  )
+  select * from funds
+  union all
+  select 'Total' as "Fund", sum("Balance") as "Balance" from funds  
 <% end %>
 
 <% @uncleared = query do %>
@@ -193,22 +222,24 @@ from (
 </div>
 <div class="row">
   <div class="span6">
-    <h3>Fund Levels</h3>
-    <%= table(@fund_levels) do |t|
-          t.link /Account/ => '/reports/register?account=Assets:Funds::0$&include_virtual=on&cleared='
+    <h3>Short Term Funds</h3>
+    <%= @funds.error %>
+    <%= table(@funds) do |t|
+          t.link /Fund/ => "/reports/register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /Balance/ => StyleDecorator.new(color: 'red'), :if => lambda { |c,r| c.value < 0 }
+          t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
         end
     %>
   </div>
   <div class="span6">
-    <h3><a href="/reports/register?account=Assets:Funds:Emergency&include_virtual=on&cleared=">Emergency Fund Longevity</a></h3>
-    <%= @emergency_fund.error %>
-    <%= table(@emergency_fund) %>
-    <h3>Goals</h3>
-    <%= @goals.error %>
-    <%= table(@goals) do |t|
-          t.link /^Goal$/ => '/reports/register?account=:this&week=:now'
-        end %>
+    <h3>Long Term Funds</h3>
+    <%= @long_term_funds.error %>
+    <%= table(@long_term_funds) do |t|
+          t.link /Fund/ => "/reports/register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}  
+          t.decorate /Balance/ => StyleDecorator.new(color: 'red'), :if => lambda { |c,r| c.value < 0 }
+          t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+        end
+    %>    
   </div>
 </div>
 <div class="row">
