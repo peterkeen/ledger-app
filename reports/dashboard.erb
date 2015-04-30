@@ -63,7 +63,7 @@
  from current_accounts    
 <% end %>
 
-<% @long_term_funds_regex = "Assets:Funds:(Travel|House|Furniture|Emergency|Bike|Car|Medical)" %>
+<% @long_term_funds_regex = "Assets:Funds:(Travel|House|Furniture|Emergency|Bike|Car|Medical|Stash)" %>
 
 <% @funds = query do %>
   with funds as (
