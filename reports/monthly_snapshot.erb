@@ -184,6 +184,7 @@ from
         accounts_months
     where
         xtn_month >= '2015-01-01'
+        and xtn_month <= '<%= @selected_month %>'
     group by
         xtn_month
     order by
