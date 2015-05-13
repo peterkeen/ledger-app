@@ -1,3 +1,4 @@
+<script type="text/javascript" src="/public/js/canvasjs.min.js"></script>
 <% @selected_month = params[:month].to_s == "" ? Date.new(Date.today.year, Date.today.month, 1) : Date.parse(params[:month]) %>
 
 <% @months = query do %>
@@ -388,6 +389,60 @@ order by xtn_month desc
         end
     %>    
     <h4>Stash</h4>
+    <div class="span12" style="height: 450px">
+    <script type="text/javascript">
+      $(function() {
+        var chart = new CanvasJS.Chart('chart-container',
+        {
+          axisX:{
+            gridColor: "Silver",
+            tickColor: "silver",
+            valueFormatString: "YYYY/MM/DD"
+          }, 
+          data: [
+            {
+              type: "stackedColumn",
+              name: "Cash",
+              color: "blue",
+              showInLegend: true,
+              dataPoints: [
+                <% @stash.rows.each do |row| %>
+                  <% dateval = row[0].value; date = "new Date(#{dateval.year},#{dateval.month - 1},#{dateval.day})" %>
+                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[1].value) %> },
+                <% end %>
+              ]
+            },
+            {
+              type: "stackedColumn",
+              name: "Investments",
+              color: "green",
+              showInLegend: true,
+              dataPoints: [
+                <% @stash.rows.each do |row| %>
+                  <% dateval = row[0].value; date = "new Date(#{dateval.year},#{dateval.month - 1},#{dateval.day})" %>
+                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[2].value) %> },
+                <% end %>
+              ]
+            },                
+            {
+              type: "stackedColumn",
+              name: "Liabilities",
+              color: "red",
+              showInLegend: true,
+              dataPoints: [
+                <% @stash.rows.each do |row| %>
+                  <% dateval = row[0].value; date = "new Date(#{dateval.year},#{dateval.month - 1},#{dateval.day})" %>
+                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[3].value) %> },
+                <% end %>
+              ]
+            },
+          ]
+        });
+        chart.render();
+      });
+    </script>
+    <div id="chart-container" style="height: 400px: width: 80%"></div>
+    </div>
     <%= @stash.error %>
     <%= table @stash %>
   </div>
