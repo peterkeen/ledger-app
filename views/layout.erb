@@ -11,10 +11,26 @@
   ) x;
 <% end %>
 
+<% @taxable_investments = query do %>
+  select
+    sum(amount)
+  from (
+    select 
+      commodity,
+      sum(amount) * (select price from prices where prices.commodity = ledger.commodity order by price_date desc limit 1) as amount
+    from
+      ledger
+    where
+      account = 'Assets:Investments:Vanguard:Joint:Taxable'
+    group by
+      commodity
+  ) x;
+<% end %>
+
 <% @budget = BudgetSummaryReport.run(1, true) %>
 <% @budget_remaining = (@budget.rows[0][3].value || 0) %>
 <% @budget_color = @budget_remaining > 0 ? '#00ff00' : '#ff0000' %>
-<% @unbudgeted_remaining = @unbudgeted.rows[0][0].value %>
+<% @unbudgeted_remaining = @unbudgeted.rows[0][0].value + @taxable_investments.rows[0][0].value %>
 <% @unbudgeted_color = @unbudgeted_remaining > 0 ? '#00ff00' : '#ff0000' %>
 <% @budget_float = 500 %>
 <% @budget_total = @budget.rows[0][1].value + @budget_float %>
