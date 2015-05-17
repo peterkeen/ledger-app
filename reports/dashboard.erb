@@ -111,6 +111,7 @@
 
 <% @uncleared = query do %>
  select
+     xtn_id as "Xtn",
      xtn_date as "Date",
      note as "Payee",
      account as "Account",
@@ -246,6 +247,8 @@ from (
   <div class="span12">
     <h3>Uncleared Transactions</h3>
     <%= table @uncleared do |t|
+          t.decorate /Xtn/ => LedgerWeb::Decorators::IconDecorator.new('chevron-right')
+          t.link /Xtn/ => "/reports/register?xtn_id=:this&include_virtual=#{params[:include_virtual]}&cleared="
           t.link /Payee/ => '/reports/register?payee=:this&month=:now&cleared='
           t.link /Account/ => '/reports/register?account=:this&month=:now&cleared='
         end %>
