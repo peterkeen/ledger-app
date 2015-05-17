@@ -9,3 +9,4 @@ gem "unicorn"
 gem "rack-ssl"
 gem 'grack', github: 'peterkeen/grack'
 gem 'rake'
+gem 'json'
