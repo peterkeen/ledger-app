@@ -405,7 +405,7 @@ order by xtn_month desc
             {
               type: "stackedColumn",
               name: "Cash",
-              color: "blue",
+              color: "#3333AA",
               showInLegend: true,
               dataPoints: [
                 <% @stash.rows.each do |row| %>
@@ -417,7 +417,7 @@ order by xtn_month desc
             {
               type: "stackedColumn",
               name: "Investments",
-              color: "green",
+              color: "#33AA33",
               showInLegend: true,
               dataPoints: [
                 <% @stash.rows.each do |row| %>
@@ -429,7 +429,7 @@ order by xtn_month desc
             {
               type: "stackedColumn",
               name: "Liabilities",
-              color: "red",
+              color: "#AA3333",
               showInLegend: true,
               dataPoints: [
                 <% @stash.rows.each do |row| %>
@@ -438,6 +438,21 @@ order by xtn_month desc
                 <% end %>
               ]
             },
+            {
+              type: "spline",
+              name: "Stash",
+              color: "#222222",
+              markerBorderColor: "#222222",
+              markerColor: "#CCCCCC",
+              lineThickness: 5,
+              showInLegend: true,
+              dataPoints: [
+                <% @stash.rows.each do |row| %>
+                  <% dateval = row[0].value; date = "new Date(#{dateval.year},#{dateval.month - 1},#{dateval.day})" %>
+                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[4].value) %> },
+                <% end %>
+              ]
+            },                
           ]
         });
         chart.render();
