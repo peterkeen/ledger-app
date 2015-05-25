@@ -33,3 +33,20 @@ class ExpensesDecorator
     cell
   end
 end
+
+class BankAccountDecorator
+  URLS = [
+    [ /Assets:Schwab/,              'https://www.schwab.com' ], 
+    [ /Assets:BofA/,                'https://www.bankofamerican.com' ], 
+    [ /Assets:Amex/,                'https://personalsavings.americanexpress.com' ],
+    [ /Liabilities:Chase/,          'https://www.chase.com' ],
+    [ /Liabilities:Loans:Mortgage/, 'https://www.wellsfargo.com' ]
+  ]
+
+  def decorate(cell, row)
+    return cell if row[0].text == "Total"
+    url = URLS.detect { |u| u[0].match(row[0].value) }
+    cell.text = "<a target=\"_blank\" href=\"#{url[1]}\"><i class=\"icon-share-alt\"></i></a>"
+    cell
+  end
+end

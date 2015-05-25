@@ -1,0 +1,51 @@
+<div class="page-title">
+  <h1>Bank Accounts</h1>
+</div>
+<div class="row">
+  <div class="span12">
+    <% @schwab = query do %>
+      select
+        account as "Account",
+        '' as "Website",
+        max(xtn_date) as "Last Txn",
+        sum(case when cleared then amount else 0 end) as "Bank Amount",
+        sum(amount) as "Real Amount"
+      from
+        ledger
+      where
+        account ~ 'Assets:(Schwab|BofA|Amex)'
+        or account ~ 'Liabilities:(Chase|Loans:Mortgage)'
+      group by
+        account
+      having
+        round(sum(amount)) != 0
+      order by
+        account
+    <% end %>
+    <%= @schwab.error %>
+    <%= table @schwab do |t|
+          t.decorate /Website/ => BankAccountDecorator.new
+          t.link /Account/ => '/reports/register?account=:this&cleared='
+        end %>
+  </div>
+</div>
+<div class="row">
+  <div class="span12">
+    <h3>Charles Schwab</h3>
+    <ul>
+      <li>Phone: 866-855-9102</li>
+    </ul>
+    <h3>Bank of America</h3>
+    <ul>
+      <li>Phone: 800-432-1000</li>
+    </ul>
+    <h3>American Express Personal Savings</h3>
+    <ul>
+      <li>Phone: 800-446-6307</li>
+    </ul>
+    <h3>Wells Fargo Mortgage</h3>
+    <ul>
+      <li>Phone: 800-222-0238</li>
+    </ul>
+  </div>
+</div>
