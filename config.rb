@@ -104,4 +104,10 @@ LedgerWeb::Config.new do |config|
     puts "Updating xtn_week"
     db["update ledger set xtn_week = date_trunc('week', xtn_date)::date"].update
   end
+
+  config.add_hook :after_load do |db|
+    puts "Updating calendar"
+    db["delete from calendar"].delete    
+    db.run("insert into calendar select xtn_date, date_trunc('week', xtn_date)::date as xtn_week, date_trunc('month', xtn_date)::date as xtn_month, date_trunc('year', xtn_date)::date as xtn_year, to_char(xtn_date, 'ID')::integer as dow, to_char(xtn_date, 'W')::integer as wom, to_char(xtn_date, 'IW')::integer as woy from (select ('2007-01-01'::date + (x || ' days')::interval)::date as xtn_date from generate_series(0,20000) x) x")
+  end
 end

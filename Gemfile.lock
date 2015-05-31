@@ -100,3 +100,6 @@ DEPENDENCIES
   rack-ssl
   rake
   unicorn
+
+BUNDLED WITH
+   1.10.1
