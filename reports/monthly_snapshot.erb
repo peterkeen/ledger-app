@@ -239,7 +239,7 @@ stocks as (
 stock_assets as (
     select
         xtn_month,
-        sum(amount * (select price from ending_prices p where p.xtn_month = x.xtn_month and p.commodity = x.commodity))  as amount
+        sum(amount * (select price from ending_prices p where p.xtn_month <= x.xtn_month and p.commodity = x.commodity order by p.xtn_month desc limit 1))  as amount
     from (
         select
             xtn_month,
