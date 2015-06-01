@@ -179,6 +179,8 @@ from
 
 <%
   @stash_start = params[:stash_start] || '2015-01-01'
+  @asset_regex = params[:include_mortgage] ? 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex|House:Zestimate)' : 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex)'
+  @liabilities_regex = params[:include_mortgage] ? 'Funds' : '(Funds|Mortgage)'
 %>
 
 
@@ -205,7 +207,7 @@ cash_assets as (
         ledger
     where
         account !~ 'Funds'
-        and account ~ 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex)'
+        and account ~ '<%= @asset_regex %>'
     order by
         xtn_date,
         amount
@@ -270,7 +272,7 @@ liabilities as (
        ledger
    where
        account ~ 'Liabilities'
-       and account !~ '(Funds|Mortgage)'
+       and account !~ '<%= @liabilities_regex %>'
 )
 select
     xtn_month as "Month",
