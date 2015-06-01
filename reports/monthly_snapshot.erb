@@ -177,6 +177,11 @@ from
   select 'Total' as "Fund", sum("In") as "In", sum("Out") as "Out", sum("Net") as "Net", sum("Balance") as "Balance" from funds  
 <% end %>
 
+<%
+  @stash_start = params[:stash_start] || '2015-01-01'
+%>
+
+
 <% @stash = query do %>
   with months as (
     select
@@ -184,7 +189,7 @@ from
     from
         calendar
     where
-        xtn_month >= '2015-01-01'
+        xtn_month >= '<%= @stash_start %>'
         and xtn_month <= '<%= @selected_month %>'
     group by
         xtn_month
@@ -199,7 +204,8 @@ cash_assets as (
     from
         ledger
     where
-        account ~ '(Assets:Schwab:Checking|Assets:Amex|Assets:BofA)'
+        account !~ 'Funds'
+        and account ~ 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex)'
     order by
         xtn_date,
         amount
@@ -275,9 +281,9 @@ select
 from (
     select
         xtn_month,
-        (select sum(amount) from cash_assets where xtn_date < months.xtn_month + '1 month'::interval) as cash,
-        (select amount from stock_assets s where s.xtn_month = months.xtn_month) as stock,
-        (select sum(amount) from liabilities where xtn_date < months.xtn_month + '1 month'::interval) as liabilities
+        (select sum(coalesce(amount, 0)) from cash_assets where xtn_date < months.xtn_month + '1 month'::interval) as cash,
+        (select coalesce(amount, 0) from stock_assets s where s.xtn_month = months.xtn_month) as stock,
+        (select sum(coalesce(amount, 0)) from liabilities where xtn_date < months.xtn_month + '1 month'::interval) as liabilities
     from
         months
 ) x
@@ -399,7 +405,7 @@ order by xtn_month desc
             tickColor: "silver",
             valueFormatString: "YYYY/MM",
             intervalType: "month",
-            interval: 1
+            interval: 12
           }, 
           data: [
             {
@@ -410,7 +416,7 @@ order by xtn_month desc
               dataPoints: [
                 <% @stash.rows.each do |row| %>
                   <% dateval = row[0].value; date = "new Date(#{dateval.year},#{dateval.month - 1},#{dateval.day})" %>
-                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[1].value) %> },
+                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[1].value || 0) %> },
                 <% end %>
               ]
             },
@@ -422,7 +428,7 @@ order by xtn_month desc
               dataPoints: [
                 <% @stash.rows.each do |row| %>
                   <% dateval = row[0].value; date = "new Date(#{dateval.year},#{dateval.month - 1},#{dateval.day})" %>
-                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[2].value) %> },
+                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[2].value || 0) %> },
                 <% end %>
               ]
             },                
@@ -434,7 +440,7 @@ order by xtn_month desc
               dataPoints: [
                 <% @stash.rows.each do |row| %>
                   <% dateval = row[0].value; date = "new Date(#{dateval.year},#{dateval.month - 1},#{dateval.day})" %>
-                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[3].value) %> },
+                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[3].value || 0) %> },
                 <% end %>
               ]
             },
@@ -444,12 +450,12 @@ order by xtn_month desc
               color: "#222222",
               markerBorderColor: "#222222",
               markerColor: "#CCCCCC",
-              lineThickness: 5,
+              lineThickness: 2,
               showInLegend: true,
               dataPoints: [
                 <% @stash.rows.each do |row| %>
                   <% dateval = row[0].value; date = "new Date(#{dateval.year},#{dateval.month - 1},#{dateval.day})" %>
-                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[4].value) %> },
+                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[4].value || 0) %> },
                 <% end %>
               ]
             },                
