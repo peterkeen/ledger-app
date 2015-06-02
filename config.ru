@@ -9,6 +9,7 @@ lib_dir = File.join(File.dirname(__FILE__), "lib")
 $LOAD_PATH.unshift(lib_dir)
 Dir[File.join(lib_dir, "*.rb")].each {|file| require File.basename(file) }
 
+LedgerWeb::Application.set(:public_folder, File.join(File.dirname(__FILE__), 'public'))
 ledger = LedgerWeb::Application.new
 
 use Rack::Auth::Basic, 'Ledger' do |username, password|
@@ -26,4 +27,5 @@ run Rack::URLMap.new \
   '/public' => Rack::File.new('./public'),
   '/files' => Rack::File.new('/usr/local/var/repos/financials'),
   '/' => ledger
+
 

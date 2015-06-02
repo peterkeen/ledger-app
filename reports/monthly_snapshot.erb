@@ -292,6 +292,66 @@ from (
 order by xtn_month desc
 <% end %>
 
+<% @allocations = query do %>
+with amounts as (
+    select
+        commodity,
+        sum(amount) * (select price from prices where prices.commodity = ledger.commodity and date_trunc('month', price_date) <= '<%= @selected_month %>' order by price_date desc limit 1) as amount
+    from
+        ledger
+    where
+        account ~ 'Assets:Investments:Vanguard'
+        and xtn_month <= '<%= @selected_month %>'
+    group by
+        commodity
+    having
+        sum(amount) > 0
+),
+allocations as (
+    select
+        commodity,
+        amount * us_stock as us_stock,
+        amount * us_bond as us_bond,
+        amount * international_stock as international_stock,
+        amount * international_bond as international_bond,
+        amount * reit as reit
+    from
+        asset_allocation
+        inner join amounts using (commodity)
+    where
+        from_date <= '<%= @selected_month %>'
+        and coalesce(to_date, '2222-01-01') >= '<%= @selected_month %>'
+)
+select
+    commodity as "Fund",
+    us_stock as "US Stock",
+    international_stock as "Intl Stock",
+    reit as "REIT",
+    us_bond as "US Bond",
+    international_bond as "Intl Bond"
+from
+    allocations
+union all
+select
+    'Total' as commodity,
+    sum(us_stock),
+    sum(international_stock),
+    sum(reit),
+    sum(us_bond),
+    sum(international_bond)
+from
+    allocations
+union all
+select
+    'Total Pct' as commodity,
+    sum(us_stock) / (select sum(amount) from amounts),
+    sum(international_stock) / (select sum(amount) from amounts),
+    sum(reit) / (select sum(amount) from amounts),
+    sum(us_bond) / (select sum(amount) from amounts),
+    sum(international_bond) / (select sum(amount) from amounts)
+from
+    allocations
+<% end %>
 
 <div class="page-title">
   <h1>Monthly Snapshot</h1>
@@ -475,10 +535,40 @@ order by xtn_month desc
     <%= table @stash %>
   </div>
 </div>
+<div class="row">
+  <div class="span8">
+    <h4>Allocations</h4>
+    <%= @allocations.error %>
+    <%= table @allocations %>
+  </div>
+  <div class="span4">
+    <div id="allocation-chart" style="height: 100px: width: 80%"></div>
+    <script>
+      $(function() {
+        var chart = new CanvasJS.Chart('allocation-chart',
+        {
+          data: [
+            {
+              type: "doughnut",
+              toolTip: "{y}",
+              startAngle: 270,
+              dataPoints: [
+              <% @data = @allocations.rows[-1].drop(1).map { |c| sprintf("%0.1f", c.value * 100) } %>
+              { y: <%= @data[0] %>, label: "US Stock", color: "#801515" },
+              { y: <%= @data[1] %>, label: "Intl Stock", color: "#AA3939" },
+              { y: <%= @data[2] %>, label: "REIT", color: "#D46A6A" },
+              { y: <%= @data[3] %>, label: "US Bond", color: "#373276" },
+              { y: <%= @data[4] %>, label: "Intl Bond", color: "#595494" },
 
-
-</div>
-
+              ]
+            }
+          ]
+        });
+        chart.render();
+      });
+    </script> 
+  </div>
+</div>  
 
 <style type="text/css">
 @media print {
