@@ -86,6 +86,21 @@ LedgerWeb::Config.new do |config|
   end
 
   config.add_hook :after_load do |db|
+    puts "Loading asset_allocation"
+
+    db["delete from asset_allocation"].delete
+
+    path = File.join(File.dirname(ENV['LEDGER_FILE']), "asset_allocation.csv")
+    return unless File.exists?(path)
+
+    CSV.foreach(path, :headers => true) do |row|
+      db[:asset_allocation].insert(row.to_hash)
+    end
+
+    puts "Done loading asset_allocation"
+  end  
+
+  config.add_hook :after_load do |db|
     puts "Inserting update record"
     now = Time.now.utc
     start = config.get :load_start
