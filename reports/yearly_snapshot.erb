@@ -103,6 +103,7 @@ from
       and note !~ 'Salary'
       and tags !~ 'skipunbudget: true'
       and xtn_year = '<%= @selected_year %>'
+      and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and xtn_year = '<%= @selected_year %>')  
     group by
       account
     order by
