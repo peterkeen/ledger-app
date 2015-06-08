@@ -21,7 +21,7 @@ with inc as (
       ledger
     where
       xtn_month = '<%= @selected_month %>'
-      and account ~ 'Assets:.*:Checking'
+      and account ~ 'Assets:.*:(Checking|Joint)'
       and note ~ 'Salary'
     union all
     select
