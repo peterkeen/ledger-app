@@ -443,8 +443,8 @@ from
     <%= table @funds do |t|
           t.link /Fund/ => "/reports/register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
-          t.decorate /Balance/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ (r[3].value || 0) < 0 }
-          t.decorate /Balance/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[3].value || 0) > 0 }
+          t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ (r[3].value || 0) < 0 }
+          t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[3].value || 0) > 0 }
         end
     %>
     <h4>Long-Term Funds</h4>
@@ -452,8 +452,8 @@ from
     <%= table @long_term_funds do |t|
           t.link /Fund/ => "/reports/register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
-          t.decorate /Balance/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ r[3].value < 0 }
-          t.decorate /Balance/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ r[3].value > 0 }
+          t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ r[3].value < 0 }
+          t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ r[3].value > 0 }
         end
     %>    
     <h4>Stash</h4>
