@@ -89,10 +89,10 @@ from (
   @efund_week_count = @burn_down.rows.select { |r| r[-1].value > @fund_balance.rows[0][0].value && r[0].value > Date.today }.length
   @efund_month_count = @efund_week_count / 4.0
 %>
-<div class="page-title">
+<div class="page-header">
   <h1>Runway <small><%= @efund_end_date.value %> (<%= @efund_week_count %> weeks, <%= @efund_month_count %> months)</small></h1>
 </div>
-<div class="row">
+<div class="row no-pdf">
   <div class="span12">
     <form class="form form-inline">
       <label for="emily_weekly">Emily Weekly</label>
@@ -111,7 +111,7 @@ from (
     <p>Total cash exhaustion (red rows): <strong><%= @end_date.value %> (<%= @week_count %> weeks, <%= @month_count %> months)</strong></p>
   </div>
 </div>
-<div class="row">
+<div class="row no-pdf">
   <div class="span12" style="height: 500px">
     <script type="text/javascript">
       $(function() {
