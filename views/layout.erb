@@ -1,3 +1,4 @@
+<% @pdf_url = request.url.gsub('/reports/', '/pdf/') %>
 <% @unbudgeted = query do %>
   select
     real_money - funds + liabilities
@@ -112,6 +113,7 @@ end
           </ul>
           <ul class="nav pull-right">
            <li><p class="navbar-text" style="font-weight: bold">(<a href="/reports/monthly_snapshot">B</a>: <span style="color: <%= @budget_color %>"><%= sprintf("$%0.2f", @budget_remaining) %></span> C: <span style="color: <%= @unbudgeted_color %>"><%= sprintf("$%0.2f", @unbudgeted_remaining) %></span>)</p></li>
+           <li><a href="<%= @pdf_url %>">PDF</a></li>
           </ul>
         </div>
       </div>
