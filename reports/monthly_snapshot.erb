@@ -535,7 +535,7 @@ from
         chart.render();
       });
     </script>
-    <div id="chart-container" style="height: 400px: width: 80%" class="no-pdf"></div>
+    <div id="chart-container" style="height: 400px; width: 100%" class="no-pdf"></div>
     <div class="no-pdf">
       <a target="_blank" href="https://personal.vanguard.com/us/myaccounts/balancesovertime">(detailed investment balances over time on Vanguard)</a>
     </div>
@@ -550,7 +550,7 @@ from
     <%= table @allocations %>
   </div>
   <div class="span4">
-    <div id="allocation-chart" style="height: 100px: width: 80%" class="no-pdf"></div>
+    <div id="allocation-chart" style="height: 400px; width: 80%" class="no-pdf"></div>
     <script>
       $(function() {
         var chart = new CanvasJS.Chart('allocation-chart',
