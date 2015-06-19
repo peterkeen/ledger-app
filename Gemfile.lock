@@ -7,7 +7,7 @@ GIT
 
 GIT
   remote: git://github.com/peterkeen/ledger-web.git
-  revision: 1b4f461921d8764490b9435d1af613419238fd68
+  revision: 0c10f07de47ab0391f9b9dac38b47a39b9233901
   specs:
     ledger_web (1.5.2)
       database_cleaner
@@ -55,7 +55,7 @@ GEM
       net-ssh (>= 2.6.5)
     netrc (0.10.3)
     pg (0.18.2)
-    rack (1.6.1)
+    rack (1.6.4)
     rack-protection (1.5.3)
       rack
     rack-ssl (1.3.3)
@@ -72,7 +72,7 @@ GEM
       rspec-core (~> 3.3.0)
       rspec-expectations (~> 3.3.0)
       rspec-mocks (~> 3.3.0)
-    rspec-core (3.3.0)
+    rspec-core (3.3.1)
       rspec-support (~> 3.3.0)
     rspec-expectations (3.3.0)
       diff-lcs (>= 1.2.0, < 2.0)
