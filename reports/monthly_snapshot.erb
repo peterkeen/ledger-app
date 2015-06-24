@@ -305,7 +305,7 @@ with amounts as (
     group by
         commodity
     having
-        sum(amount) > 0
+        sum(amount) > 0.01
 ),
 allocations as (
     select
@@ -384,7 +384,8 @@ from
         @budgeted_value = (@budgeted_expenses.rows[-1][2].value rescue 0) || 0
         @budgeted_diff = (@budgted_expenses.rows[-1][3].value rescue 0) || 0
         @unbudgeted_value = (@unbudgeted_expenses.rows[-1][1].value rescue 0) || 0
-        @funds_value = ((@funds.rows[-1][3].value rescue 0) || 0) + ((@long_term_funds.rows[-1][3].value rescue 0) || 0)
+        @funds_in_value = ((@funds.rows[-1][1].value rescue 0) || 0) + ((@long_term_funds.rows[-1][1].value rescue 0) || 0)
+        @funds_out_value = ((@funds.rows[-1][2].value rescue 0) || 0) + ((@long_term_funds.rows[-1][2].value rescue 0) || 0)
       %>
       <tbody>
         <tr>
@@ -400,12 +401,12 @@ from
           <td><span class="pull-right"><span style="<%= @unbudgeted_value > 500 ? 'color: red' : '' %>"><%= sprintf("%0.2f", @unbudgeted_value) %></span></span></td>
         </tr>
         <tr>
-          <td>Funds</td>
-          <td><span class="pull-right"><%= sprintf("%0.2f", @funds_value) %></span></td>
+          <td>Funds In</td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", @funds_in_value) %></span></td>
         </tr>
         <tr>
-          <td><strong>Net Cash</strong></td>
-          <td><span class="pull-right"><strong><%= sprintf("%0.2f", @income_value - (@budgeted_value + @unbudgeted_value) - @funds_value) %></strong></span></td>
+          <td>Funds Out</td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", @funds_out_value) %></span></td>
         </tr>
       </tbody>
     </table>
