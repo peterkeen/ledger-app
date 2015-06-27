@@ -69,6 +69,7 @@ with budgeted as (
           and xtn_month = '<%= @selected_month %>'
           and tags !~ 'Reimburseable'
           and tags !~ 'nobudget'
+          and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and xtn_month = '<%= @selected_month %>')
       group by
           xtn_month,
           account
