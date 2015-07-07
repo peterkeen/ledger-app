@@ -27,7 +27,7 @@ class ExpensesDecorator
       params[k] = v.is_a?(Proc) ? v.call(cell, row) : v
     end
 
-    url = "/reports/register?" + params.map { |k,v| "#{k}=#{v}" }.join("&")
+    url = "/reports/_register?" + params.map { |k,v| "#{k}=#{v}" }.join("&")
     link_text = cell.text.gsub('Expenses:', '').gsub('Liabilities:', '')
     cell.text = "<a href=\"#{url}\">#{link_text}</a>"
     cell

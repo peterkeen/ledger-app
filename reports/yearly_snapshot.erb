@@ -203,8 +203,8 @@ from
     <h4>Income</h4>
     <%= @income.error %>
     <%= table @income do |t|
-          t.link /Account/ => "/reports/register?account=:0&year=#{@selected_year}", :if => ->(c,r){!(c.text =~ /(Salary|Total)/)}
-          t.link /Account/ => "/reports/register?account=Income:Salary&year=#{@selected_year}", :if => ->(c,r){c.text =~ /Salary/}
+          t.link /Account/ => "/reports/_register?account=:0&year=#{@selected_year}", :if => ->(c,r){!(c.text =~ /(Salary|Total)/)}
+          t.link /Account/ => "/reports/_register?account=Income:Salary&year=#{@selected_year}", :if => ->(c,r){c.text =~ /Salary/}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
         end
     %>
@@ -213,7 +213,7 @@ from
     <h4>Funds</h4>
     <%= @funds.error %>
     <%= table @funds do |t|
-          t.link /Fund/ => "/reports/register?account=:0&year=#{@selected_year}&cleared=", :if => ->(c,r){c.text != "Total"}
+          t.link /Fund/ => "/reports/_register?account=:0&year=#{@selected_year}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
           t.decorate /Balance/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){(c.value || -1) < 0}
         end

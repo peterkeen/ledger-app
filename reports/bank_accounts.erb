@@ -25,7 +25,7 @@
     <%= @schwab.error %>
     <%= table @schwab do |t|
           t.decorate /Website/ => BankAccountDecorator.new
-          t.link /Account/ => '/reports/register?account=:this&cleared='
+          t.link /Account/ => '/reports/_register?account=:this&cleared='
         end %>
   </div>
 </div>

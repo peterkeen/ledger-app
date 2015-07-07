@@ -418,8 +418,8 @@ from
     <h4>Income</h4>
     <%= @income.error %>
     <%= table @income do |t|
-          t.link /Account/ => "/reports/register?account=:0&month=#{@selected_month}", :if => ->(c,r){!(c.text =~ /(Salary|Total)/)}
-          t.link /Account/ => "/reports/register?account=Income:Salary&month=#{@selected_month}", :if => ->(c,r){c.text =~ /Salary/}
+          t.link /Account/ => "/reports/_register?account=:0&month=#{@selected_month}", :if => ->(c,r){!(c.text =~ /(Salary|Total)/)}
+          t.link /Account/ => "/reports/_register?account=Income:Salary&month=#{@selected_month}", :if => ->(c,r){c.text =~ /Salary/}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
         end
     %>
@@ -449,7 +449,7 @@ from
     <h4>Short-Term Funds</h4>
     <%= @funds.error %>
     <%= table @funds do |t|
-          t.link /Fund/ => "/reports/register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
+          t.link /Fund/ => "/reports/_register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
           t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ (r[3].value || 0) < 0 }
           t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[3].value || 0) > 0 }
@@ -458,7 +458,7 @@ from
     <h4>Long-Term Funds</h4>
     <%= @long_term_funds.error %>
     <%= table @long_term_funds do |t|
-          t.link /Fund/ => "/reports/register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
+          t.link /Fund/ => "/reports/_register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
           t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ r[3].value < 0 }
           t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ r[3].value > 0 }

@@ -216,7 +216,7 @@ from (
   <div class="span6">
     <h3><a href="/reports/accounts">Current Accounts</a></h3>
     <%= table(@current_accounts) do |t|
-          t.link /Account/ => '/reports/register?account=:this&year=:now', :if => lambda{|c,r| c.value != "Total"}
+          t.link /Account/ => '/reports/_register?account=:this&year=:now', :if => lambda{|c,r| c.value != "Total"}
         end
     %>
   </div>
@@ -226,7 +226,7 @@ from (
     <h3>Short Term Funds</h3>
     <%= @funds.error %>
     <%= table(@funds) do |t|
-          t.link /Fund/ => "/reports/register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
+          t.link /Fund/ => "/reports/_register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /Balance/ => StyleDecorator.new(color: 'red'), :if => lambda { |c,r| c.value < 0 }
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
         end
@@ -236,7 +236,7 @@ from (
     <h3>Long Term Funds</h3>
     <%= @long_term_funds.error %>
     <%= table(@long_term_funds) do |t|
-          t.link /Fund/ => "/reports/register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}  
+          t.link /Fund/ => "/reports/_register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}  
           t.decorate /Balance/ => StyleDecorator.new(color: 'red'), :if => lambda { |c,r| c.value < 0 }
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
         end
@@ -248,9 +248,9 @@ from (
     <h3>Uncleared Transactions</h3>
     <%= table @uncleared do |t|
           t.decorate /Xtn/ => LedgerWeb::Decorators::IconDecorator.new('chevron-right')
-          t.link /Xtn/ => "/reports/register?xtn_id=:this&include_virtual=#{params[:include_virtual]}&cleared="
-          t.link /Payee/ => '/reports/register?payee=:this&month=:now&cleared='
-          t.link /Account/ => '/reports/register?account=:this&month=:now&cleared='
+          t.link /Xtn/ => "/reports/_register?xtn_id=:this&include_virtual=#{params[:include_virtual]}&cleared="
+          t.link /Payee/ => '/reports/_register?payee=:this&month=:now&cleared='
+          t.link /Account/ => '/reports/_register?account=:this&month=:now&cleared='
         end %>
   </div>
 </div>

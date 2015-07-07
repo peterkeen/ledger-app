@@ -3,7 +3,7 @@ require 'json'
 
 LedgerWeb::Config.new do |config|
   config.set :database_url, ENV['DATABASE_URL']
-  config.set :index_report, :dashboard
+  config.set :index_report, :_dashboard
   config.set :ledger_format, "%(quoted(xact.beg_line)),%(quoted(date)),%(quoted(payee)),%(quoted(account)),%(quoted(commodity(scrub(display_amount)))),%(quoted(quantity(scrub(display_amount)))),%(quoted(cleared)),%(quoted(virtual)),%(quoted(join(note | xact.note))),%(quoted(cost)),%(quoted(code)),%(quoted(filename))\n"
   config.set :ledger_columns, [ :xtn_id, :xtn_date, :note, :account, :commodity, :amount, :cleared, :virtual, :tags, :cost, :checknum, :filename ]  
   config.set :additional_view_directories, [File.join(File.dirname(__FILE__), 'views')]

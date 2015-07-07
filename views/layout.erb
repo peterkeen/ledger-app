@@ -105,7 +105,9 @@ end
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Reports <b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <% @reports.each do |report| %>
-                <li><a href="/reports/<%= report[0] %>"><%= report[1] %></a></li>
+                  <% if report[0][0] != '_' %>
+                    <li><a href="/reports/<%= report[0] %>"><%= report[1] %></a></li>
+                  <% end %>
                 <% end %>
               </ul>
             </li>

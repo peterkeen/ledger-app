@@ -40,5 +40,5 @@
   <h1>Balance Sheet</h1>
 </div>
 <%= table(@report) do |t|
-      t.link /\d\d\d\d/ => '/reports/register?account=:0&year=:title'
+      t.link /\d\d\d\d/ => '/reports/_register?account=:0&year=:title'
     end %>

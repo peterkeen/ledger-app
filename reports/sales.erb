@@ -129,7 +129,7 @@
     <h3>Expenses</h3>
     <%= @expenses.error %>
     <%= table @expenses do |t|
-          t.link /Expense/ => "/reports/register?account=Expenses:Sales::this&year=#{params[:year]}", if: ->(c,r) { c.value != 'Total' }
+          t.link /Expense/ => "/reports/_register?account=Expenses:Sales::this&year=#{params[:year]}", if: ->(c,r) { c.value != 'Total' }
         end  %>
   </div>
   <div class="span6">

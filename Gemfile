@@ -10,3 +10,4 @@ gem "rack-ssl"
 gem 'grack', github: 'peterkeen/grack'
 gem 'rake'
 gem 'json'
+gem 'rack-rewrite', '~> 1.5.0'
