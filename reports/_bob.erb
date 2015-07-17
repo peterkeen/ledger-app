@@ -15,6 +15,7 @@
       ledger
     where
       (jtags->>'Bob') = 'true'
+      and (jtags->>'Paid') is null
       and account ~ 'Expenses'
     order by
       xtn_date
