@@ -1,0 +1,25 @@
+<% @transactions = query do %>
+  select
+    xtn_date as "Date",
+    note as "Payee",
+    items as "Items",
+    amount as "Amount",
+    sum(amount) over (rows unbounded preceding) as "Sum"
+  from (
+    select
+      xtn_date,
+      note,
+      jtags->>'Items' as items,
+      amount
+    from
+      ledger
+    where
+      (jtags->>'Bob') = 'true'
+      and account ~ 'Expenses'
+    order by
+      xtn_date
+  ) x
+<% end %>
+
+<%= @transactions.error %>
+<%= table @transactions %>
