@@ -13,6 +13,7 @@
       <% @query = query do %>
         <%= params[:query] %>
       <% end %>
+      <%= @query.error %>
       <%= table @query %>
     <% end %>
   </div>
