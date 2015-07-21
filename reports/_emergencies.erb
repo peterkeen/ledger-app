@@ -1,0 +1,19 @@
+<% @emergencies = query do %>
+  select
+    jtags->>'Emergency' as "Event",
+    sum(amount) as "Amount"
+  from
+    ledger 
+  where
+     account ~ 'Expenses'
+     and (jtags->>'Emergency') is not null
+  group by 
+    jtags->>'Emergency'
+  order by 
+    jtags->>'Emergency'  
+<% end %>
+
+<%= table @emergencies do |t|
+      t.link /Event/ => '/reports/_register?tags=Emergency::this&account=Expenses'
+    end %>
+

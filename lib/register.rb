@@ -16,6 +16,14 @@ class RegisterReport < LedgerWeb::Report
     inner_where_clauses << "cleared" if params[:cleared] == "on"
     inner_where_clauses << "cleared = false" if params[:uncleared] == "on"
 
+    if params[:tags]
+      tags = params[:tags].split(/,/)
+      tags.each do |tag|
+        tag, value = tag.split(/:/)
+        inner_where_clauses << "(jtags->>'#{tag}') = '#{value}'"
+      end
+    end
+
     raise "Need either account regex or xtn_id" if inner_where_clauses.empty?
 
     inner_where_clause = inner_where_clauses.join(" and ")
