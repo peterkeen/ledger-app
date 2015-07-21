@@ -10,11 +10,15 @@
 <div class="row">
   <div class="span12">
     <% if params[:query] %>
-      <% @query = query do %>
-        <%= params[:query] %>
+      <% if params[:query] =~ /(insert|delete|drop|grant|create|commit|rollback)/i %>
+        Invalid query!
+      <% else %>
+        <% @query = query do %>
+          <%= params[:query] %>
+        <% end %>
+        <%= @query.error %>
+        <%= table @query %>
       <% end %>
-      <%= @query.error %>
-      <%= table @query %>
     <% end %>
   </div>
 </div>
