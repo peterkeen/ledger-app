@@ -12,6 +12,44 @@
     xtn_month desc
 <% end %>
 
+<% @cash = query do %>
+    select
+      sum(real_money) as real_money,
+      sum(liquid_investments) as liquid_investments,    
+      sum(funds) as funds,
+      sum(liabilities) as liabilities,
+      sum(real_money) + sum(liquid_investments) - sum(funds) + sum(liabilities) as amount
+    from (
+      select
+        sum(case when account ~ '(Assets:Schwab:Checking|Assets:Amex|Assets:BofA)' then amount else 0 end) as real_money,
+        sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
+        sum(case when account in ('Liabilities:Chase:SP', 'Liabilities:Payable') then amount else 0 end) as liabilities,
+        sum(0) as liquid_investments
+      from
+        ledger
+      where
+        xtn_month <= '<%= @selected_month %>'    
+      union all
+      select
+        sum(0) as real_money,
+        sum(0) as funds,
+        sum(0) as liabilities,
+        sum(amount) as liquid_investments
+      from (
+        select 
+          commodity,
+          sum(amount) * (select price from prices where prices.commodity = ledger.commodity and date_trunc('month', price_date) <= '<%= @selected_month %>' order by price_date desc limit 1) as amount
+        from
+          ledger
+        where
+          account = 'Assets:Investments:Vanguard:Joint:Taxable'
+          and xtn_month <= '<%= @selected_month %>'    
+        group by
+          commodity
+      ) x
+    ) x
+<% end %>
+
 <% @income = query do %>
 with inc as (
     select
@@ -371,7 +409,7 @@ from
   </div>
 </div>
 <div class="row">
-  <div class="span12">
+  <div class="span6">
     <h4>Summary</h4>
     <table class="table table-striped table-hover table-bordered table-condensed">
       <thead>
@@ -408,6 +446,39 @@ from
         <tr>
           <td>Funds Out</td>
           <td><span class="pull-right"><%= sprintf("%0.2f", @funds_out_value) %></span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="span6">
+    <h4>Cash</h4>    
+    <table class="table table-striped table-hover table-bordered table-condensed">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th><span class="pull-right">Amount</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Bank Balance</td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", @cash.rows[0][0].value) %></span></td>
+        </tr>
+        <tr>
+          <td>Liquid Investments</td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", @cash.rows[0][1].value) %></span></td>
+        </tr>
+        <tr>
+          <td>Fund Balance</td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", @cash.rows[0][2].value) %></span></td>
+        </tr>
+        <tr>
+          <td>Liabilities Balance</td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", @cash.rows[0][3].value) %></span></td>
+        </tr>
+        <tr>
+          <td>Cash Balance</td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", @cash.rows[0][4].value) %></span></td>
         </tr>
       </tbody>
     </table>
