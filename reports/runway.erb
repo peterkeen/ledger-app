@@ -5,7 +5,7 @@
 <%
   @start_date = Date.today << 3
   @start_date -= 1 until @start_date.wday == 1
-  @num_weeks = 65
+  @num_weeks = (params[:num_weeks] || 65).to_i
 %>
 
 <% @fund_balance = query do %>
