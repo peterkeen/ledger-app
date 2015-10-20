@@ -1,0 +1,46 @@
+<%
+  now = Date.today;
+  @month = params[:month].to_s == "" ? Date.new(now.year, now.month, 1) : params[:month]
+  @year = params[:year].to_s == "" ? Date.new(now.year, 1, 1) : params[:year]
+%>
+
+<% @months = query do %>
+  select xtn_month from ledger group by xtn_month order by xtn_month desc
+<% end %>
+
+<% @years = query do %>
+  select xtn_year from ledger group by xtn_year order by xtn_year desc
+<% end %>
+
+<% @disbursable = CashFlowReport.run %>
+
+<div class="page-header">
+  <h1>Cash Flow for <%= params[:year].to_s == "" ? @month : @year %></h1>
+</div>
+<div class="row no-pdf">
+  <div class="span12">
+    <form class="form form-inline">    
+      <select name="month" class="input-small">
+        <% @selected_month = params[:month].to_s == "" ? nil : Date.parse(params[:month]) %>
+        <option value="">Month</option>
+        <% @months.each do |row| %>
+          <option value="<%= row[0].value %>" <%= (@selected_month == row[0].value) ? "selected" : "" %>><%= row[0].value %></option>
+        <% end %>
+      </select>
+      <select name="year" class="input-small">
+        <% @selected_year = params[:year].to_s == "" ? nil : Date.parse(params[:year]) %>
+        <option value="">Year</option>
+        <% @years.each do |row| %>
+          <option value="<%= row[0].value %>" <%= (@selected_year == row[0].value) ? "selected" : "" %>><%= row[0].value %></option>
+        <% end %>
+      </select>
+      <input type="submit" value="Update" class="btn">
+    </form>
+  </div>
+</div>
+<div class="row">
+  <div class="span12">
+    <%= @disbursable.error %>
+    <%= table @disbursable %>
+  </div>
+</div>  
