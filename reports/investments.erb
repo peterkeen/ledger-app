@@ -5,7 +5,7 @@ with months as (
     from
         calendar
     where
-        xtn_month between '2012-01-01' and now()::date
+        xtn_month between '2011-06-01' and now()::date
     group by
         xtn_month
     order by
@@ -65,8 +65,8 @@ with months as (
 <% end %>
 
 <%
-  @start_nav = @nav = 2.074696
   @shares = 10000
+  @start_nav = @nav = (24031.65 / @shares)
 %>
 
 <%= @nav_data.error %>
