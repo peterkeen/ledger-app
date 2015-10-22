@@ -1,0 +1,108 @@
+<% @nav_data = query do %>
+with months as (
+    select
+        xtn_month
+    from
+        calendar
+    where
+        xtn_month between '2012-01-01' and now()::date
+    group by
+        xtn_month
+    order by
+        xtn_month
+), ending_prices as (
+    select 
+        xtn_month::date as xtn_month,
+        commodity, 
+        price
+    from (
+        select 
+            date_trunc('month', price_date) as xtn_month,
+            commodity,
+            price,
+            row_number() over (partition by date_trunc('month', price_date), commodity order by price_date desc) as rk
+       from
+            prices
+    ) x
+    where rk = 1
+), stocks as (
+    select
+        xtn_month,
+        commodity,
+        sum(cost) as cost,
+        sum(amount) as amount
+    from
+        ledger
+    where
+        account ~ 'Assets:Investments'
+    group by
+        xtn_month,
+        commodity
+    order by
+        xtn_month,
+        commodity
+), stock_assets as (
+    select
+        xtn_month,
+        sum(coalesce(cost, 0)) as cost,
+        sum(case when commodity = '$' then amount else amount * (select price from ending_prices p where p.xtn_month <= x.xtn_month and p.commodity = x.commodity order by p.xtn_month desc limit 1) end)  as amount
+    from (
+        select
+            xtn_month,
+            commodity,
+            (select sum(cost) from stocks s where s.commodity = l.commodity and xtn_month = m.xtn_month) as cost,
+            (select sum(amount) from stocks s where s.commodity = l.commodity and xtn_month <= m.xtn_month) as amount
+        from
+            months m,
+            (select distinct commodity from stocks) l
+        order by
+            xtn_month,
+            commodity
+    ) x
+    group by
+        xtn_month
+) select * from stock_assets;
+<% end %>
+
+<%
+  @start_nav = @nav = 2.074696
+  @shares = 10000
+%>
+
+<%= @nav_data.error %>
+
+<table class="table table-condensed table-striped table-bordered">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th><span class="pull-right">Start Shares</span></th>
+      <th><span class="pull-right">Cost In/Out</th>
+      <th><span class="pull-right">Shares In/Out</span></th>
+      <th><span class="pull-right">End Shares</span></th>
+      <th><span class="pull-right">Amount</span></th>
+      <th><span class="pull-right">NAV</span></th>
+    </tr>
+  </thead>
+  <tbody>
+<% @nav_data.rows.each do |row| %>
+  <%
+    @start_shares = @shares
+    @shares_in_out = row[1].value / @nav
+    @end_shares = @start_shares + @shares_in_out
+    @shares = @end_shares
+    @nav = row[2].value / @shares
+  %>
+  <tr>
+    <td><%= row[0].value %></td>
+    <td><span class="pull-right"><%= sprintf("%0.4f", @start_shares) %></span></td>
+    <td><span class="pull-right"><%= sprintf("$%0.2f", row[1].value) %></span></td>
+    <td><span class="pull-right"><%= sprintf("%0.4f", @shares_in_out) %></span></td>
+    <td><span class="pull-right"><%= sprintf("%0.4f", @end_shares) %></span></td>
+    <td><span class="pull-right"><%= sprintf("$%0.2f", row[2].value) %></span></td>
+    <td><span class="pull-right"><%= sprintf("$%0.4f", @nav) %></span></td>
+  </tr>
+<% end %>
+</tbody>
+</table>
+
+CAGR: <%= sprintf("%0.2f%", (((@nav/@start_nav)**(1/((@nav_data.rows[-1][0].value - @nav_data.rows[0][0].value)/365.0)))-1) * 100)  %>
