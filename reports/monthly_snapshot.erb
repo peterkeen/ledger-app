@@ -286,7 +286,7 @@ stocks as (
 stock_assets as (
     select
         xtn_month,
-        max(case when commodity = '$' then amount else amount * (select price from ending_prices p where p.xtn_month <= x.xtn_month and p.commodity = x.commodity order by p.xtn_month desc limit 1) end)  as amount
+        sum(case when commodity = '$' then amount else amount * (select price from ending_prices p where p.xtn_month <= x.xtn_month and p.commodity = x.commodity order by p.xtn_month desc limit 1) end)  as amount
     from (
         select
             xtn_month,
