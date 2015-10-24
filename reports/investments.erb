@@ -1,3 +1,4 @@
+<script type="text/javascript" src="/public/js/canvasjs.min.js"></script>
 <% @nav_data = query do %>
 with months as (
     select
@@ -64,45 +65,129 @@ with months as (
 ) select * from stock_assets;
 <% end %>
 
+<%= @nav_data.error %>
+
 <%
   @shares = 10000
   @start_nav = @nav = (24031.65 / @shares)
+
+  @table_data = @nav_data.rows.map do |row|
+    start_shares = @shares
+    shares_in_out = row[1].value / @nav
+    end_shares = start_shares + shares_in_out
+    @shares = end_shares
+    @nav = row[2].value / @shares
+
+    {
+      start_shares: start_shares,
+      cost_in_out: row[1].value,
+      shares_in_out: shares_in_out,
+      end_shares: end_shares,
+      shares: @shares.dup,
+      nav: @nav.dup,
+      amount: row[2].value,
+      date: row[0].value,
+    }
+  end
+  @cagr = sprintf("%0.2f%", (((@nav/@start_nav)**(1/((@nav_data.rows[-1][0].value - @nav_data.rows[0][0].value)/365.0)))-1) * 100)
 %>
 
-<%= @nav_data.error %>
+<div class="page-header">
+  <h1>Investment Performance</h1>
+</div>
 
-<table class="table table-condensed table-striped table-bordered">
-  <thead>
-    <tr>
-      <th>Date</th>
-      <th><span class="pull-right">Start Shares</span></th>
-      <th><span class="pull-right">Cost In/Out</th>
-      <th><span class="pull-right">Shares In/Out</span></th>
-      <th><span class="pull-right">End Shares</span></th>
-      <th><span class="pull-right">Amount</span></th>
-      <th><span class="pull-right">NAV</span></th>
-    </tr>
-  </thead>
-  <tbody>
-<% @nav_data.rows.each do |row| %>
-  <%
-    @start_shares = @shares
-    @shares_in_out = row[1].value / @nav
-    @end_shares = @start_shares + @shares_in_out
-    @shares = @end_shares
-    @nav = row[2].value / @shares
-  %>
-  <tr>
-    <td><%= row[0].value %></td>
-    <td><span class="pull-right"><%= sprintf("%0.4f", @start_shares) %></span></td>
-    <td><span class="pull-right"><%= sprintf("$%0.2f", row[1].value) %></span></td>
-    <td><span class="pull-right"><%= sprintf("%0.4f", @shares_in_out) %></span></td>
-    <td><span class="pull-right"><%= sprintf("%0.4f", @end_shares) %></span></td>
-    <td><span class="pull-right"><%= sprintf("$%0.2f", row[2].value) %></span></td>
-    <td><span class="pull-right"><%= sprintf("$%0.4f", @nav) %></span></td>
-  </tr>
-<% end %>
-</tbody>
-</table>
+<div class="row" style="margin-bottom: 2em;">
+  <div class="span12">
+    <p>
+      This shows our investment performance modeled as a mutual fund. It includes directly-controlled taxable and non-taxable accounts, but does not include
+      any employer 401(k)s until they were rolled into the Vangurd IRA, except the Okapi LLC 401(k).
+      Our initial fund value on May 31, 2011 was $24,031.65 split among 10,000 shares, giving us an initial NAV of <%= sprintf('$%0.4f', @start_nav) %>.
+    </p>
+    <p>
+      Current CAGR: <strong><%= @cagr %></strong>
+    </p>
+  </div>
+</div>
 
-CAGR: <%= sprintf("%0.2f%", (((@nav/@start_nav)**(1/((@nav_data.rows[-1][0].value - @nav_data.rows[0][0].value)/365.0)))-1) * 100)  %>
+<div class="row no-pdf">
+  <div class="span12" style="height: 500px">
+    <script type="text/javascript">
+      $(function() {
+        var chart = new CanvasJS.Chart('chart-container', {
+          axisX: {
+            gridColor: "silver",
+            tickColor: "silver",
+            valueFormatString: "YYYY/MM",
+            intervalType: "month",
+            interval: 12
+          },
+          data: [
+            {
+              type: "column",
+              name: "Amount",
+              color: "#33AA33",
+              showInLegend: true,
+              dataPoints: [
+                <% @table_data.each do |row| %>
+                  <% dateval = row[:date]; date = "new Date(#{dateval.year},#{dateval.month - 1},#{dateval.day})" %>
+                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[:amount] || 0) %> },
+                <% end %>
+              ]
+            },
+            {
+              type: "spline",
+              name: "NAV",
+              color: "#222222",
+              markerBorderColor: "#222222",
+              markerColor: "#CCCCCC",
+              lineThickness: 2,
+              showInLegend: true,
+              axisYType: "secondary",                
+              dataPoints: [
+                <% @table_data.each do |row| %>
+                  <% dateval = row[:date]; date = "new Date(#{dateval.year},#{dateval.month - 1},#{dateval.day})" %>
+                  { x: <%= date %>, y: <%= sprintf("%0.2f", row[:nav] || 0) %> },
+                <% end %>
+              ]
+            },
+          ]
+        });
+        chart.render();
+      });
+    </script>
+    <div id="chart-container" style="height: 400px; width: 100%"></div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="span12">
+    <table class="table table-condensed table-striped table-bordered table-hever">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th><span class="pull-right">Start Shares</span></th>
+          <th><span class="pull-right">Cost In/Out</th>
+          <th><span class="pull-right">Shares In/Out</span></th>
+          <th><span class="pull-right">End Shares</span></th>
+          <th><span class="pull-right">Amount</span></th>
+          <th><span class="pull-right">NAV</span></th>
+        </tr>
+      </thead>
+      <tbody>
+      <% @table_data.reverse.each do |row| %>
+        <tr>
+          <td><%= row[:date] %></td>
+          <td><span class="pull-right"><%= sprintf("%0.4f", row[:start_shares]) %></span></td>
+          <td><span class="pull-right"><%= sprintf("$%0.2f", row[:cost_in_out]) %></span></td>
+          <td><span class="pull-right"><%= sprintf("%0.4f", row[:shares_in_out]) %></span></td>
+          <td><span class="pull-right"><%= sprintf("%0.4f", row[:end_shares]) %></span></td>
+          <td><span class="pull-right"><%= sprintf("$%0.2f", row[:amount]) %></span></td>
+          <td><span class="pull-right"><%= sprintf("$%0.4f", row[:nav]) %></span></td>
+        </tr>
+      <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
