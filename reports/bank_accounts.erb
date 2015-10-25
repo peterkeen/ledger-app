@@ -13,7 +13,7 @@
       from
         ledger
       where
-        account ~ 'Assets:(Schwab|BofA|Amex)'
+        account ~ '<%= Constants::CURRENT_ACCOUNTS %>'
         or account ~ 'Liabilities:(Chase|Loans:Mortgage)'
       group by
         account

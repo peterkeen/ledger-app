@@ -21,7 +21,7 @@
       sum(real_money) + sum(liquid_investments) - sum(funds) + sum(liabilities) as amount
     from (
       select
-        sum(case when account ~ '(Assets:Schwab:Checking|Assets:Amex|Assets:BofA)' then amount else 0 end) as real_money,
+        sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' then amount else 0 end) as real_money,
         sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
         sum(case when account in ('Liabilities:Chase:SP', 'Liabilities:Payable') then amount else 0 end) as liabilities,
         sum(0) as liquid_investments
@@ -162,8 +162,6 @@ from
     ubexp
 <% end %>
 
-<% @long_term_funds_regex = "Assets:Funds:(Travel|House|Furniture|Emergency|Reserve|Bike|Car|Medical|Stash|Insurance:Car|Insurance:Umbrella)" %>
-
 <% @funds = query do %>
   with funds as (
     select
@@ -176,7 +174,7 @@ from
       ledger
     where
       account ~ '^Assets:Funds'
-      and account !~ '<%= @long_term_funds_regex %>'
+      and account !~ '<%= Constants::LONG_TERM_FUNDS %>'
       and xtn_month <= '<%= @selected_month %>'
     group by
       account
@@ -202,7 +200,7 @@ from
       ledger
     where
       account ~ '^Assets:Funds'
-      and account ~ '<%= @long_term_funds_regex %>'
+      and account ~ '<%= Constants::LONG_TERM_FUNDS %>'
       and xtn_month <= '<%= @selected_month %>'
     group by
       account

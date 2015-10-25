@@ -15,7 +15,7 @@ class CashFlowReport < LedgerWeb::Report
         from (
           select
             x,
-            (select min(xtn_month) from ledger where account ~ '(Assets:Schwab:Checking|Assets:Amex|Assets:BofA|Assets:Receivable:Emily)') + (x || ' months')::interval as xtn_date
+            (select min(xtn_month) from ledger where account ~ '#{Constants::CURRENT_ACCOUNTS}' or account ~ 'Assets:Receivable:Emily') + (x || ' months')::interval as xtn_date
            from
              generate_series(0,120) x
         ) x
@@ -29,7 +29,8 @@ class CashFlowReport < LedgerWeb::Report
         from
           ledger
         where
-          account ~ '(Assets:Schwab:Checking|Assets:Amex|Assets:BofA|Assets:Receivable:Emily)'
+          account ~ '#{Constants::CURRENT_ACCOUNTS}'
+          or account ~ 'Assets:Receivable:Emily'
         order by
           xtn_date,
           amount

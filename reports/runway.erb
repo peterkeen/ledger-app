@@ -28,7 +28,7 @@ assets as (
   from
     ledger
   where
-    account ~ '(Assets:Schwab:Checking|Assets:Amex|Assets:BofA)'
+    account ~ '<%= Constants::CURRENT_ACCOUNTS %>'
   order by
     xtn_date,
     amount
@@ -191,7 +191,7 @@ from (
       t.decorate /.*/ => StyleDecorator.new('background-color' => 'lightblue'), :if => ->(c,r){today = Date.today; start = r[0].value; endt = r[0].value + 7; today >= start && today < endt }
       t.decorate /.*/ => StyleDecorator.new('background-color' => '#ccffcc'), :if => ->(c,r){r[-1].value <= @fund_balance.rows[0][0].value}
       t.decorate /.*/ => StyleDecorator.new('background-color' => '#ffcccc'), :if => ->(c,r){r[-1].value <= 0}
-      t.link /Week/ => '/reports/_register?week=:this&account=(Assets:Schwab:Checking|Assets:Amex|Assets:BofA)&cleared='
+      t.link /Week/ => "/reports/_register?week=:this&account=(#{ Constants::CURRENT_ACCOUNTS})&cleared="
     end %>
   </div>
 </div>

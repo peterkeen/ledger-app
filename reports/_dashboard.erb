@@ -41,7 +41,7 @@
  from
      ledger
  where
-     account in ('Assets:Schwab:Checking', 'Assets:BofA:Checking', 'Liabilities:Chase:SP')
+     account ~ '<%= Constants::CURRENT_ACCOUNTS %>'
  group by
      account
  ) x
@@ -60,10 +60,8 @@
      sum(bank) as "Bank",
      sum(real) as "Real",
      sum(uncleared) as "Uncleared"
- from current_accounts    
+ from current_accounts
 <% end %>
-
-<% @long_term_funds_regex = "Assets:Funds:(Travel|House|Furniture|Emergency|Reserve|Bike|Car|Medical|Stash|Insurance:Car|Insurance:Umbrella)" %>
 
 <% @funds = query do %>
   with funds as (
@@ -74,7 +72,7 @@
       ledger
     where
       account ~ '^Assets:Funds'
-      and account !~ '<%= @long_term_funds_regex %>'
+      and account !~ '<%= Constants::LONG_TERM_FUNDS %>'
     group by
       account
     having
@@ -96,7 +94,7 @@
       ledger
     where
       account ~ '^Assets:Funds'
-      and account ~ '<%= @long_term_funds_regex %>'
+      and account ~ '<%= Constants::LONG_TERM_FUNDS %>'
     group by
       account
     having
@@ -157,7 +155,7 @@ end
     real_money - funds + liabilities
   from (
     select
-      sum(case when account ~ '(Assets:Schwab:Checking|Assets:Amex|Assets:BofA|Assets:Receivable:Emily)' then amount else 0 end) as real_money,
+      sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' then amount else 0 end) as real_money,
       sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
       sum(case when account in ('Liabilities:Chase:SP', 'Liabilities:Payable') then amount else 0 end) as liabilities
     from
