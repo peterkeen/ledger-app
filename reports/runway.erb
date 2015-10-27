@@ -3,7 +3,7 @@
 <% @emily_weekly = params[:emily_weekly] || 0 %>
 <% @unbudget = params[:unbudget] || 325 %>
 <%
-  @start_date = Date.today << 3
+  @start_date = params[:start_date].nil? ? Date.today << 3 : Date.parse(params[:start_date])
   @start_date -= 1 until @start_date.wday == 1
   @num_weeks = (params[:num_weeks] || 65).to_i
 %>
