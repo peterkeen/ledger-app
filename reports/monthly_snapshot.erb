@@ -53,16 +53,6 @@
 <% @income = query do %>
 with inc as (
     select
-      'Salary (after taxes and retirement)' as account,
-      sum(amount) as amount
-    from
-      ledger
-    where
-      xtn_month = '<%= @selected_month %>'
-      and account ~ 'Assets:.*:(Checking|Joint)'
-      and note ~ 'Salary'
-    union all
-    select
       *
     from (
       select
@@ -72,14 +62,20 @@ with inc as (
         ledger
       where
         account ~ '^Income'
-        and account !~ '^Income:Salary'
         and xtn_month = '<%= @selected_month %>'
-        and account !~ 'Retirement'
       group by
         account
       order by
         account
     ) x
+    union all
+    select
+      'Taxes' as account, -1 * sum(amount) as amount
+    from
+      ledger
+    where
+      account ~ '^Expenses:Taxes'
+    and xtn_month = '<%= @selected_month %>'
   )
   select account as "Account", amount as "Amount" from inc where round(amount, 0) != 0
   union all
@@ -141,9 +137,9 @@ from
         or
         (account in (select account from budget_months where xtn_month = '<%= @selected_month %>') and tags ~ 'nobudget: true')
       )
-      and note !~ 'Salary'
       and tags !~ 'skipunbudget: true'
       and xtn_month = '<%= @selected_month %>'
+      and account !~ '^Expenses:Taxes'
       and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and xtn_month = '<%= @selected_month %>')
     group by
       account
