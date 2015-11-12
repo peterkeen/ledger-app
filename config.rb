@@ -20,6 +20,8 @@ LedgerWeb::Config.new do |config|
       config.get(:files_seen)[filename] = count
     end
 
+    row[:commodity] = row[:commodity].gsub(/"/, '')
+
     row[:xtn_id] = row[:xtn_id].to_i + (config.get(:files_seen)[filename] * 1_000_000)
 
     tags_hash = {}
