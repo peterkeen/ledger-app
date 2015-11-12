@@ -7,7 +7,7 @@ GIT
 
 GIT
   remote: git://github.com/peterkeen/ledger-web.git
-  revision: 0c10f07de47ab0391f9b9dac38b47a39b9233901
+  revision: 95afd8446bcba45ac5558cf8623e20d5df00b32b
   specs:
     ledger_web (1.5.2)
       database_cleaner
@@ -24,7 +24,7 @@ GIT
 GEM
   remote: http://rubygems.org/
   specs:
-    backports (3.6.4)
+    backports (3.6.7)
     capistrano (2.12.0)
       highline
       net-scp (>= 1.0.0)
@@ -32,20 +32,20 @@ GEM
       net-ssh (>= 2.0.14)
       net-ssh-gateway (>= 1.1.0)
     capistrano-buildpack (0.0.13)
-    database_cleaner (1.4.1)
+    database_cleaner (1.5.1)
     diff-lcs (1.2.5)
     directory_watcher (1.5.1)
     docverter (1.0.1)
       rest-client (~> 1.7)
-    domain_name (0.5.24)
+    domain_name (0.5.25)
       unf (>= 0.0.5, < 1.0.0)
     highline (1.6.21)
     http-cookie (1.0.2)
       domain_name (~> 0.5)
     json (1.8.2)
     kgio (2.9.2)
-    mime-types (2.6.1)
-    multi_json (1.11.1)
+    mime-types (2.6.2)
+    multi_json (1.11.2)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-sftp (2.1.2)
@@ -53,8 +53,8 @@ GEM
     net-ssh (2.9.1)
     net-ssh-gateway (1.2.0)
       net-ssh (>= 2.6.5)
-    netrc (0.10.3)
-    pg (0.18.2)
+    netrc (0.11.0)
+    pg (0.18.3)
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
@@ -69,25 +69,25 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
-    rspec (3.3.0)
-      rspec-core (~> 3.3.0)
-      rspec-expectations (~> 3.3.0)
-      rspec-mocks (~> 3.3.0)
-    rspec-core (3.3.1)
-      rspec-support (~> 3.3.0)
-    rspec-expectations (3.3.0)
+    rspec (3.4.0)
+      rspec-core (~> 3.4.0)
+      rspec-expectations (~> 3.4.0)
+      rspec-mocks (~> 3.4.0)
+    rspec-core (3.4.0)
+      rspec-support (~> 3.4.0)
+    rspec-expectations (3.4.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.3.0)
-    rspec-mocks (3.3.0)
+      rspec-support (~> 3.4.0)
+    rspec-mocks (3.4.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.3.0)
-    rspec-support (3.3.0)
-    sequel (4.23.0)
+      rspec-support (~> 3.4.0)
+    rspec-support (3.4.0)
+    sequel (4.28.0)
     sinatra (1.4.6)
       rack (~> 1.4)
       rack-protection (~> 1.4)
       tilt (>= 1.3, < 3)
-    sinatra-contrib (1.4.4)
+    sinatra-contrib (1.4.6)
       backports (>= 2.0)
       multi_json
       rack-protection
