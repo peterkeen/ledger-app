@@ -70,14 +70,16 @@ with inc as (
     ) x
     union all
     select
-      'Taxes' as account, -1 * sum(amount) as amount
+      'Taxes out' as account, -1 * sum(amount) as amount
     from
       ledger
     where
       account ~ '^Expenses:Taxes'
     and xtn_month = '<%= @selected_month %>'
+    union all
+    select 'Retirement out' as account, -1 * sum(cost) as amount from ledger where account ~ 'Assets:.*:(Rollover|Roth|401K)' and xtn_month = '<%= @selected_month %>'
   )
-  select account as "Account", amount as "Amount" from inc where round(amount, 0) != 0
+  select replace(account, 'Income:', '') as "Account", amount as "Amount" from inc where round(amount, 0) != 0
   union all
   select 'Total' as "Account", sum(amount) as "Amount" from inc
 <% end %>
