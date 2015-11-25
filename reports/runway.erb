@@ -84,7 +84,7 @@ from (
   @week_count = @burn_down.rows.select { |r| r[-1].value > 0 && r[0].value > Date.today }.length
   @month_count = @week_count / 4.0
 
-  @efund_end_date_row = @burn_down.rows.detect { |r| r[-1].value < @fund_balance.rows[0][0].value } || @burn_down.rows[-1]
+  @efund_end_date_row = @burn_down.rows.detect { |r| r[-1].value < @fund_balance.rows[0][0].value && r[0].value > Date.today } || @burn_down.rows[-1]
   @efund_end_date = @efund_end_date_row[0]
   @efund_week_count = @burn_down.rows.select { |r| r[-1].value > @fund_balance.rows[0][0].value && r[0].value > Date.today }.length
   @efund_month_count = @efund_week_count / 4.0
@@ -189,8 +189,8 @@ from (
     <%= table @burn_down do |t|
       today = Date.today
       t.decorate /.*/ => StyleDecorator.new('background-color' => 'lightblue'), :if => ->(c,r){today = Date.today; start = r[0].value; endt = r[0].value + 7; today >= start && today < endt }
-      t.decorate /.*/ => StyleDecorator.new('background-color' => '#ccffcc'), :if => ->(c,r){r[-1].value <= @fund_balance.rows[0][0].value}
-      t.decorate /.*/ => StyleDecorator.new('background-color' => '#ffcccc'), :if => ->(c,r){r[-1].value <= 0}
+      t.decorate /.*/ => StyleDecorator.new('background-color' => '#ccffcc'), :if => ->(c,r){r[-1].value <= @fund_balance.rows[0][0].value && r[0].value + 7 > today}
+      t.decorate /.*/ => StyleDecorator.new('background-color' => '#ffcccc'), :if => ->(c,r){r[-1].value <= 0 && r[0].value + 7 > today}
       t.link /Week/ => "/reports/_register?week=:this&account=(#{ Constants::CURRENT_ACCOUNTS})&cleared="
     end %>
   </div>
