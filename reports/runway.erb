@@ -3,9 +3,11 @@
 <% @emily_weekly = params[:emily_weekly] || 0 %>
 <% @unbudget = params[:unbudget] || 200 %>
 <%
-  @start_date = Date.today << 3
+  @start_date = params[:start_date].nil? ? Date.today << 3 : Date.parse(params[:start_date])
   @start_date -= 1 until @start_date.wday == 1
   @num_weeks = (params[:num_weeks] || 65).to_i
+  @additional_start = (params[:additional_start] || 0).to_i
+  @okapi_weekly_num_weeks = (params[:okapi_weekly_num_weeks] || @num_weeks).to_i
 %>
 
 <% @fund_balance = query do %>
@@ -53,13 +55,14 @@ select
 from (
   select
      week,
-     <%= @okapi_weekly %> + <%= @emily_weekly %> as cash_in,
+     (case when row_number = 1 then <%= @additional_start %> else 0 end) + (case when row_number < <%= @okapi_weekly_num_weeks %> then <%= @okapi_weekly %> else 0 end) + <%= @emily_weekly %> as cash_in,
      cash_out,
-     sum(cash_out + <%= @okapi_weekly %> + <%= @emily_weekly %>) over (rows unbounded preceding) as ending
+     sum((case when row_number = 1 then <%= @additional_start %> else 0 end) + cash_out + (case when row_number < <%= @okapi_weekly_num_weeks %> then <%= @okapi_weekly %> else 0 end) + <%= @emily_weekly %>) over (rows unbounded preceding) as ending
   from (
     select
       week,
       week_num,
+      row_number() over (rows unbounded preceding) as row_number,
       -1 * coalesce((select sum(amount) from budget_periods b where b.week = week_num and (x.week between from_date and to_date or (x.week >= from_date and to_date is null))), 0) - <%= @unbudget %> as cash_out
     from (
       select
@@ -77,6 +80,7 @@ from (
   ) x
 ) x
 <% end %>
+<% p @burn_down.error %>
 
 <%
   @end_date_row = @burn_down.rows.detect { |r| r[-1].value < 0 } || @burn_down.rows[-1]
