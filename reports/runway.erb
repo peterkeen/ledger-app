@@ -7,8 +7,24 @@
   @start_date -= 1 until @start_date.wday == 1
   @num_weeks = (params[:num_weeks] || 65).to_i
   @additional_start = (params[:additional_start] || 0).to_i
-  @okapi_weekly_num_weeks = (params[:okapi_weekly_num_weeks] || @num_weeks).to_i
+
+  cash_cases = [@okapi_weekly, @emily_weekly, "(case when row_number = 1 then #{@additional_start} else 0 end)"]
+
+  params.keys.select { |k| k.to_s =~ /cash_amount_(\d+)/ }.each do |key|
+    amount = params[key].to_i
+    n = /cash_amount_(\d+)/.match(key.to_s)[1]
+    start_key = "cash_start_#{n}".to_sym
+    end_key = "cash_end_#{n}".to_sym
+    cash_start = params[start_key].nil? ? @start_date : Date.parse(params[start_key])
+    cash_end = params[end_key].nil? ? @start_date + (@num_weeks * 7) : Date.parse(params[end_key])    
+
+    cash_cases << "(case when week between '#{cash_start}' and '#{cash_end}' then #{amount} else 0 end)"
+  end
+
+  @cash_cases = cash_cases.join(" + ")
+  puts @cash_cases
 %>
+
 
 <% @fund_balance = query do %>
   select sum(amount) from ledger where account ~ 'Assets:Funds' and account !~ 'Assets:Funds:(Emergency|Reserve)'
@@ -55,9 +71,9 @@ select
 from (
   select
      week,
-     (case when row_number = 1 then <%= @additional_start %> else 0 end) + (case when row_number < <%= @okapi_weekly_num_weeks %> then <%= @okapi_weekly %> else 0 end) + <%= @emily_weekly %> as cash_in,
+     <%= @cash_cases %> as cash_in,
      cash_out,
-     sum((case when row_number = 1 then <%= @additional_start %> else 0 end) + cash_out + (case when row_number < <%= @okapi_weekly_num_weeks %> then <%= @okapi_weekly %> else 0 end) + <%= @emily_weekly %>) over (rows unbounded preceding) as ending
+     sum(cash_out + <%= @cash_cases %>) over (rows unbounded preceding) as ending
   from (
     select
       week,
