@@ -15,10 +15,12 @@
     n = /cash_amount_(\d+)/.match(key.to_s)[1]
     start_key = "cash_start_#{n}".to_sym
     end_key = "cash_end_#{n}".to_sym
+    week_key = "cash_week_#{n}".to_sym
     cash_start = params[start_key].nil? ? @start_date : Date.parse(params[start_key])
     cash_end = params[end_key].nil? ? @start_date + (@num_weeks * 7) : Date.parse(params[end_key])    
+    cash_week = params[week_key].nil? ? '' : "and week_num = #{params[week_key].to_i}"
 
-    cash_cases << "(case when week between '#{cash_start}' and '#{cash_end}' then #{amount} else 0 end)"
+    cash_cases << "(case when week between '#{cash_start}' and '#{cash_end}' #{cash_week} then #{amount} else 0 end)"
   end
 
   @cash_cases = cash_cases.join(" + ")
