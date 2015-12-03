@@ -1,7 +1,7 @@
 <script type="text/javascript" src="/public/js/canvasjs.min.js"></script>
 <% @okapi_weekly = params[:okapi_weekly] || 0 %>
 <% @emily_weekly = params[:emily_weekly] || 0 %>
-<% @unbudget = params[:unbudget] || 325 %>
+<% @unbudget = params[:unbudget] || 200 %>
 <%
   @start_date = Date.today << 3
   @start_date -= 1 until @start_date.wday == 1
