@@ -43,6 +43,7 @@
           ledger
         where
           account = 'Assets:Investments:Vanguard:Joint:Taxable'
+          and commodity ~ '(<%= Constants::LIQUID_TICKERS %>)'
           and xtn_month <= '<%= @selected_month %>'    
         group by
           commodity

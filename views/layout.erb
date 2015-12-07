@@ -23,6 +23,7 @@
       ledger
     where
       account = 'Assets:Investments:Vanguard:Joint:Taxable'
+      and commodity ~ '(<%= Constants::LIQUID_TICKERS %>)'  
     group by
       commodity
   ) x;
