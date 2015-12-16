@@ -118,7 +118,7 @@
      ledger
  where
      not cleared
-     and account in ('Assets:Schwab:Checking', 'Liabilities:Chase:SP')
+     and account ~ '<%= Constants::CURRENT_ACCOUNTS %>'
  order by
      xtn_date,
      account,
