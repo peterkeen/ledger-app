@@ -44,9 +44,12 @@
      account ~ '<%= Constants::CURRENT_ACCOUNTS %>'
  group by
      account
+ having
+     abs(sum(case when cleared and not virtual then amount else 0 end)) >= 1 
  ) x
  order by
      account
+
  )
  select
      account as "Account",
@@ -201,6 +204,7 @@ from (
   </div>
   <div class="span6">
     <h3><a href="/reports/accounts">Current Accounts</a></h3>
+    <%= @current_accounts.error %>
     <%= table(@current_accounts) do |t|
           t.link /Account/ => '/reports/_register?account=:this&year=:now', :if => lambda{|c,r| c.value != "Total"}
         end
@@ -232,6 +236,7 @@ from (
 <div class="row">
   <div class="span12">
     <h3>Uncleared Transactions</h3>
+    <%= @uncleared.error %>
     <%= table @uncleared do |t|
           t.decorate /Xtn/ => LedgerWeb::Decorators::IconDecorator.new('chevron-right')
           t.link /Xtn/ => "/reports/_register?xtn_id=:this&include_virtual=#{params[:include_virtual]}&cleared="
