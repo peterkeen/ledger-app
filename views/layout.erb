@@ -1,12 +1,11 @@
 <% @pdf_url = request.url.gsub('/reports/', '/pdf/') %>
 <% @unbudgeted = query do %>
   select
-    real_money - funds + liabilities
+    real_money - funds
   from (
     select
       sum(case when account ~ '<%= Constants::CURRENT_ACCOUNTS %>' then amount else 0 end) as real_money,
-      sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
-      sum(case when account in ('Liabilities:Chase:SP', 'Liabilities:Payable') then amount else 0 end) as liabilities
+      sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds
     from
       ledger
   ) x;
@@ -18,7 +17,7 @@
   from (
     select 
       commodity,
-      sum(amount) * (select price from prices where prices.commodity = ledger.commodity order by price_date desc limit 1) as amount
+      sum(amount) * case when commodity = '$' then 1 else (select price from prices where prices.commodity = ledger.commodity order by price_date desc limit 1) end as amount
     from
       ledger
     where

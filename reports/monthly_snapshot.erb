@@ -21,7 +21,7 @@
       sum(real_money) + sum(liquid_investments) - sum(funds) + sum(liabilities) as amount
     from (
       select
-        sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' then amount else 0 end) as real_money,
+        sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account !~ 'Liabilities' then amount else 0 end) as real_money,
         sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
         sum(case when account ~ '(Liabilities:Chase|Liabilities:Payable)' then amount else 0 end) as liabilities,
         sum(0) as liquid_investments
