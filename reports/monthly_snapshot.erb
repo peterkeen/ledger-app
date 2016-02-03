@@ -76,7 +76,8 @@ with inc as (
       ledger
     where
       account ~ '^Expenses:Taxes'
-    and xtn_month = '<%= @selected_month %>'
+      and xtn_month = '<%= @selected_month %>'
+      and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and xtn_month = '<%= @selected_month %>')
     union all
     select 'Retirement out' as account, -1 * sum(cost) as amount from ledger where account ~ 'Assets:.*:(Rollover|Roth|401K)' and xtn_month = '<%= @selected_month %>'
   )
