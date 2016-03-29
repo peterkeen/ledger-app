@@ -646,6 +646,27 @@ from
         chart.render();
       });
     </script> 
+    <%
+      stash = @stash.rows[0][-1].value
+      swr = ((stash || 0.0) * 0.04) / 12
+      budget = @budgeted_expenses.rows[-1][1].value
+
+      progress = sprintf("%0.2f%", swr / budget * 100)
+    %>
+    <table class="table table-striped table-hover table-bordered table-condensed" style="margin-top: 2em">
+      <thead>
+        <tr>
+          <th><span class="pull-right">4% SWR</span></th>
+          <th><span class="pull-right">% progress to FI</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="pull-right"><%= sprintf("%0.2f", swr) %></span></td>
+          <td><span class="pull-right"><%= progress %></span></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>  
 
