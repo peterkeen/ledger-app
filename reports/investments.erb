@@ -65,7 +65,7 @@ with months as (
 ) select * from stock_assets;
 <% end %>
 
-<%= @nav_data.error %>
+<% STDERR.puts @nav_data.error %>
 
 <%
   @shares = 10000
