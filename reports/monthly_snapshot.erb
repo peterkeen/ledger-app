@@ -215,7 +215,7 @@ from
 <% end %>
 
 <%
-  @stash_start = params[:stash_start] || [@selected_month, '2015-01-01'].min
+  @stash_start = params[:stash_start] || [@selected_month, Date.parse('2015-01-01')].min
   @asset_regex = params[:include_mortgage] ? 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex|House:Zestimate)' : 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex)'
   @liabilities_regex = params[:include_mortgage] ? 'Funds' : '(Funds|Mortgage)'
 %>
