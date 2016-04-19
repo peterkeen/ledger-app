@@ -215,7 +215,7 @@ from
 <% end %>
 
 <%
-  @stash_start = params[:stash_start] || '2015-01-01'
+  @stash_start = params[:stash_start] || [@selected_month, '2015-01-01'].min
   @asset_regex = params[:include_mortgage] ? 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex|House:Zestimate)' : 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex)'
   @liabilities_regex = params[:include_mortgage] ? 'Funds' : '(Funds|Mortgage)'
 %>
@@ -529,8 +529,8 @@ from
     <%= table @long_term_funds do |t|
           t.link /Fund/ => "/reports/_register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
-          t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ r[3].value < 0 }
-          t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ r[3].value > 0 }
+          t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ (r[3].value || 0) < 0 }
+          t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[3].value || 0) > 0 }
         end
     %>
   </div>
@@ -632,7 +632,7 @@ from
               toolTip: "{y}",
               startAngle: 270,
               dataPoints: [
-              <% @data = @allocations.rows[-1].drop(1).map { |c| sprintf("%0.1f", c.value * 100) } %>
+              <% @data = @allocations.rows[-1].drop(1).map { |c| sprintf("%0.1f", (c.value || 0) * 100) } %>
               { y: <%= @data[0] %>, label: "US Stock", color: "#801515" },
               { y: <%= @data[1] %>, label: "Intl Stock", color: "#AA3939" },
               { y: <%= @data[2] %>, label: "REIT", color: "#D46A6A" },
