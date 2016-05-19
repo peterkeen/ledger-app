@@ -3,6 +3,11 @@ require 'ledger_web'
 require 'grack'
 require 'rack/rewrite'
 
+temp = Tempfile.new('ruby_inline', '/tmp')
+dir = temp.path temp.delete
+Dir.mkdir(dir, 0755)
+ENV['INLINEDIR'] = dir 
+
 LedgerWeb::Config.instance.load_user_config(File.dirname(__FILE__))
 LedgerWeb::Database.connect
 
