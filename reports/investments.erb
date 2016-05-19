@@ -70,6 +70,8 @@ with months as (
 <%
   @shares = 10000
   @start_nav = @nav = (24031.65 / @shares)
+  cf = Xirr::Cashflow.new
+  cf << Xirr::Transaction.new(24031.65, date: Date.new(2011,5,31))
 
   @table_data = @nav_data.rows.map do |row|
     start_shares = @shares
@@ -77,6 +79,7 @@ with months as (
     end_shares = start_shares + shares_in_out
     @shares = end_shares
     @nav = row[2].value / @shares
+    cf << Xirr::Transaction.new(row[1].value.to_f, date: row[0].value)
 
     {
       start_shares: start_shares,
@@ -90,6 +93,8 @@ with months as (
     }
   end
   @cagr = sprintf("%0.2f%", (((@nav/@start_nav)**(1/((@nav_data.rows[-1][0].value - @nav_data.rows[0][0].value)/365.0)))-1) * 100)
+  cf << Xirr::Transaction.new((@nav_data.rows[-1][2].value * -1).to_f, date: Date.today)
+  @xirr = sprintf("%0.2f%", cf.xirr * 100)
 %>
 
 <div class="page-header">
@@ -106,6 +111,9 @@ with months as (
     <p>
       Current CAGR: <strong><%= @cagr %></strong>
     </p>
+    <p>
+      Current XIRR: <strong><%= @xirr %></strong>
+    </p>    
   </div>
 </div>
 
