@@ -16,6 +16,7 @@ set :concurrency, "web=1,load=1"
 set :base_port,   6500
 set :use_ssl, true
 set :force_ssl, false
+set :listen_address, '10.248.9.84'
 
 read_env 'prod'
 
