@@ -166,6 +166,7 @@ from
   with funds as (
     select
       replace(account, 'Assets:Funds:', '') as "Fund",
+      sum(case when xtn_month < '<%= @selected_month %>' then amount else 0 end) as "Start",  
       sum(case when amount > 0 and xtn_month = '<%= @selected_month %>' then amount else 0 end) as "In",
       sum(case when amount < 0 and xtn_month = '<%= @selected_month %>' then amount else 0 end) as "Out", 
       sum(case when xtn_month = '<%= @selected_month %>' then amount else 0 end) as "Net",
@@ -185,13 +186,14 @@ from
   )
   select * from funds
   union all
-  select 'Total' as "Fund", sum("In") as "In", sum("Out") as "Out", sum("Net") as "Net", sum("Balance") as "Balance" from funds
+  select 'Total' as "Fund", sum("Start") as "Start", sum("In") as "In", sum("Out") as "Out", sum("Net") as "Net", sum("Balance") as "Balance" from funds
 <% end %>
 
 <% @long_term_funds = query do %>
   with funds as (
     select
       replace(account, 'Assets:Funds:', '') as "Fund",
+      sum(case when xtn_month < '<%= @selected_month %>' then amount else 0 end) as "Start",  
       sum(case when amount > 0 and xtn_month = '<%= @selected_month %>' then amount else 0 end) as "In",
       sum(case when amount < 0 and xtn_month = '<%= @selected_month %>' then amount else 0 end) as "Out", 
       sum(case when xtn_month = '<%= @selected_month %>' then amount else 0 end) as "Net",
@@ -211,7 +213,59 @@ from
   )
   select * from funds
   union all
-  select 'Total' as "Fund", sum("In") as "In", sum("Out") as "Out", sum("Net") as "Net", sum("Balance") as "Balance" from funds  
+  select 'Total' as "Fund", sum("Start") as "Start", sum("In") as "In", sum("Out") as "Out", sum("Net") as "Net", sum("Balance") as "Balance" from funds  
+<% end %>
+
+<% @current_accounts = query do %>
+  with funds as (
+    select
+      account as "Account",
+      sum(case when xtn_month < '<%= @selected_month %>' then amount else 0 end) as "Start",
+      sum(case when amount > 0 and xtn_month = '<%= @selected_month %>' then amount else 0 end) as "In",
+      sum(case when amount < 0 and xtn_month = '<%= @selected_month %>' then amount else 0 end) as "Out", 
+      sum(case when xtn_month = '<%= @selected_month %>' then amount else 0 end) as "Net",
+      sum(amount) as "Balance"
+    from
+      ledger
+    where
+      account ~ '<%= Constants::CURRENT_ACCOUNTS %>'
+      and xtn_month <= '<%= @selected_month %>'
+    group by
+      account
+    having
+      round(sum(case when xtn_month = '<%= @selected_month %>' then amount else 0 end)) != 0 or round(sum(amount)) != 0
+    order by
+      account
+  )
+  select * from funds
+  union all
+  select 'Total' as "Account", sum("Start") as "Start", sum("In") as "In", sum("Out") as "Out", sum("Net") as "Net", sum("Balance") as "Balance" from funds  
+<% end %>
+
+<% @long_term_liabilities = query do %>
+  with funds as (
+    select
+      account as "Account",
+      sum(case when xtn_month < '<%= @selected_month %>' then amount else 0 end) as "Start",
+      sum(case when amount > 0 and xtn_month = '<%= @selected_month %>' then amount else 0 end) as "In",
+      sum(case when amount < 0 and xtn_month = '<%= @selected_month %>' then amount else 0 end) as "Out", 
+      sum(case when xtn_month = '<%= @selected_month %>' then amount else 0 end) as "Net",
+      sum(amount) as "Balance"
+    from
+      ledger
+    where
+      account ~ '<%= Constants::LONG_TERM_LIABILITIES %>'
+      and xtn_month <= '<%= @selected_month %>'
+    group by
+      account
+    having
+      round(sum(case when xtn_month = '<%= @selected_month %>' then amount else 0 end)) != 0 or round(sum(amount)) != 0
+    order by
+      account
+  )
+  select * from funds
+  union all
+  select 'Total' as "Account", sum("Start") as "Start", sum("In") as "In", sum("Out") as "Out", sum("Net") as "Net", sum("Balance") as "Balance" from funds  
 <% end %>
 
 <%
@@ -520,8 +574,8 @@ from
     <%= table @funds do |t|
           t.link /Fund/ => "/reports/_register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
-          t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ (r[3].value || 0) < 0 }
-          t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[3].value || 0) > 0 }
+          t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ (r[4].value || 0) < 0 }
+          t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[4].value || 0) > 0 }
         end
     %>
     <h4>Long-Term Funds</h4>
@@ -529,10 +583,28 @@ from
     <%= table @long_term_funds do |t|
           t.link /Fund/ => "/reports/_register?account=Assets:Funds::0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
-          t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ (r[3].value || 0) < 0 }
-          t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[3].value || 0) > 0 }
+          t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ (r[4].value || 0) < 0 }
+          t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[4].value || 0) > 0 }
         end
     %>
+    <h4>Current Accounts</h4>
+    <%= @current_accounts.error %>
+    <%= table @current_accounts do |t|
+          t.link /Account/ => "/reports/_register?account=:0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
+          t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+          t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ (r[4].value || 0) < 0 }
+          t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[4].value || 0) > 0 }
+        end
+    %>
+    <h4>Long Term Liabilities</h4>
+    <%= @long_term_liabilities.error %>
+    <%= table @long_term_liabilities do |t|
+          t.link /Account/ => "/reports/_register?account=:0&month=#{@selected_month}&cleared=", :if => ->(c,r){c.text != "Total"}
+          t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+          t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ (r[4].value || 0) < 0 }
+          t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[4].value || 0) > 0 }
+        end
+    %>    
   </div>
 </div>
 <div class="row">
