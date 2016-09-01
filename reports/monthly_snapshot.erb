@@ -475,8 +475,8 @@ from
         @budgeted_value = (@budgeted_expenses.rows[-1][2].value rescue 0) || 0
         @budgeted_diff = (@budgted_expenses.rows[-1][3].value rescue 0) || 0
         @unbudgeted_value = (@unbudgeted_expenses.rows[-1][1].value rescue 0) || 0
-        @funds_in_value = ((@funds.rows[-1][1].value rescue 0) || 0) + ((@long_term_funds.rows[-1][1].value rescue 0) || 0)
-        @funds_out_value = ((@funds.rows[-1][2].value rescue 0) || 0) + ((@long_term_funds.rows[-1][2].value rescue 0) || 0)
+        @funds_in_value = ((@funds.rows[-1][2].value rescue 0) || 0) + ((@long_term_funds.rows[-1][2].value rescue 0) || 0)
+        @funds_out_value = ((@funds.rows[-1][3].value rescue 0) || 0) + ((@long_term_funds.rows[-1][3].value rescue 0) || 0)
       %>
       <tbody>
         <tr>
