@@ -33,8 +33,6 @@
 <% @budget_color = @budget_remaining > 0 ? '#00ff00' : '#ff0000' %>
 <% @unbudgeted_remaining = @unbudgeted.rows[0][0].value + @taxable_investments.rows[0][0].value %>
 <% @unbudgeted_color = @unbudgeted_remaining > 0 ? '#00ff00' : '#ff0000' %>
-<% @budget_float = 500 %>
-<% @budget_total = @budget.rows[0][1].value + @budget_float %>
 
 <% @last_updated_report = query do %>
 select

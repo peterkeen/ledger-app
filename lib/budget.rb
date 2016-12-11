@@ -21,6 +21,7 @@ class BudgetSummaryReport < LedgerWeb::Report
                budget_months
           where
                amount > 0
+               and #{month_where}
           group by
                xtn_month,
                account
@@ -37,6 +38,7 @@ class BudgetSummaryReport < LedgerWeb::Report
               and tags !~ 'Reimburseable'
               and tags !~ 'nobudget'
               and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and #{month_where})
+              and #{month_where}
           group by
               xtn_month,
               account
