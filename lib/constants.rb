@@ -4,3 +4,5 @@ module Constants
   LONG_TERM_LIABILITIES = 'Liabilities:(Loans|PNC:HELOC)'
   LIQUID_TICKERS   = 'VASIX|\$'
 end
+
+LedgerWeb::Database.handle.logger = Logger.new($stdout)

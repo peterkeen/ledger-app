@@ -35,4 +35,3 @@ run Rack::URLMap.new \
   '/files' => Rack::File.new('/usr/local/var/repos/financials'),
   '/' => ledger
 
-
