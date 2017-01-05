@@ -104,11 +104,11 @@ with inc as (
     ) x
     union all
     select
-      'Taxes out' as account, -1 * sum(amount) as amount
+      'Taxes and Medical out' as account, -1 * sum(amount) as amount
     from
       ledger
     where
-      account ~ '^Expenses:Taxes'
+      account ~ '^Expenses:Taxes|Expenses:Insurance:Medical'
       and <%= @date_clause %>
       and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and <%= @date_clause %>)
     union all
@@ -219,7 +219,7 @@ from
       )
       and tags !~ 'skipunbudget: true'
       and <%= @date_clause %>
-      and account !~ '^Expenses:Taxes'
+      and account !~ '^(Expenses:Taxes|Expenses:Insurance:Medical)'
       and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and <%= @date_clause %>)
     group by
       account
