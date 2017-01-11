@@ -404,6 +404,7 @@ stocks as (
         ledger
     where
         account ~ 'Assets:Investments'
+        or account = 'Assets:401K:Contribution'
     group by
         xtn_month,
         commodity
