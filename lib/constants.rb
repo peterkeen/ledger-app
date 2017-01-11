@@ -5,4 +5,6 @@ module Constants
   LIQUID_TICKERS   = 'VASIX|\$'
 end
 
-LedgerWeb::Database.handle.logger = Logger.new($stdout)
+if ENV['RACK_ENV'] != 'production'
+  LedgerWeb::Database.handle.logger = Logger.new($stdout)
+end
