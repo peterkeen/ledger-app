@@ -70,7 +70,7 @@ with months as (
 <% STDERR.puts @nav_data.error %>
 
 <%
-  @shares = 10000
+  @shares = 1000
   @start_nav = @nav = (24031.65 / @shares)
   cf = Xirr::Cashflow.new
   cf << Xirr::Transaction.new(24031.65, date: Date.new(2011,5,31))
@@ -108,7 +108,7 @@ with months as (
     <p>
       This shows our investment performance modeled as a mutual fund. It includes directly-controlled taxable and non-taxable accounts, but does not include
       any employer 401(k)s until they were rolled into the Vangurd IRA, except the Okapi LLC 401(k).
-      Our initial fund value on May 31, 2011 was $24,031.65 split among 10,000 shares, giving us an initial NAV of <%= sprintf('$%0.4f', @start_nav) %>.
+      Our initial fund value on May 31, 2011 was $24,031.65 split among 1,000 shares, giving us an initial NAV of <%= sprintf('$%0.2f', @start_nav) %>.
     </p>
     <p>
       Current CAGR: <strong><%= @cagr %></strong>
@@ -177,8 +177,8 @@ with months as (
         <tr>
           <th>Date</th>
           <th><span class="pull-right">Start Shares</span></th>
-          <th><span class="pull-right">Cost In/Out</th>
-          <th><span class="pull-right">Shares In/Out</span></th>
+          <th><span class="pull-right">Net Dollars</th>
+          <th><span class="pull-right">Net Shares</span></th>
           <th><span class="pull-right">End Shares</span></th>
           <th><span class="pull-right">Amount</span></th>
           <th><span class="pull-right">NAV</span></th>
@@ -188,12 +188,12 @@ with months as (
       <% @table_data.reverse.each do |row| %>
         <tr>
           <td><%= row[:date] %></td>
-          <td><span class="pull-right"><%= sprintf("%0.4f", row[:start_shares]) %></span></td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", row[:start_shares]) %></span></td>
           <td><span class="pull-right"><%= sprintf("$%0.2f", row[:cost_in_out]) %></span></td>
-          <td><span class="pull-right"><%= sprintf("%0.4f", row[:shares_in_out]) %></span></td>
-          <td><span class="pull-right"><%= sprintf("%0.4f", row[:end_shares]) %></span></td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", row[:shares_in_out]) %></span></td>
+          <td><span class="pull-right"><%= sprintf("%0.2f", row[:end_shares]) %></span></td>
           <td><span class="pull-right"><%= sprintf("$%0.2f", row[:amount]) %></span></td>
-          <td><span class="pull-right"><%= sprintf("$%0.4f", row[:nav]) %></span></td>
+          <td><span class="pull-right"><%= sprintf("$%0.2f", row[:nav]) %></span></td>
         </tr>
       <% end %>
       </tbody>
