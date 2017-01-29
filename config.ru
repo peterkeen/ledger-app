@@ -32,6 +32,6 @@ repo = Grack::App.new(
 run Rack::URLMap.new \
   '/repo' => repo,
   '/public' => Rack::File.new('./public'),
-  '/files' => Rack::File.new('/usr/local/var/repos/financials'),
+  '/files' => Rack::File.new(File.dirname(ENV['LEDGER_FILE'])),
   '/' => ledger
 

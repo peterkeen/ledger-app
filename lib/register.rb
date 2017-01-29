@@ -36,6 +36,7 @@ class RegisterReport < LedgerWeb::Report
           note as \"Payee\",
           amount as \"Amount\",
           cleared as \"Cleared\",
+          receipt as \"Receipt\",
           sum(amount) over (order by xtn_date, xtn_id rows unbounded preceding) as \"Sum\",
           running_sum as \"Balance\"
       from (
@@ -49,6 +50,7 @@ class RegisterReport < LedgerWeb::Report
               note,
               amount,
               cleared,
+              jtags->>'receipt' as receipt,
               sum(amount) over (order by xtn_date, xtn_id rows unbounded preceding) as running_sum
           from
               ledger
