@@ -5,8 +5,9 @@ GIT
     grack (0.1.0)
       rack
 
-PATH
-  remote: /Users/peter/devel/ledger-web
+GIT
+  remote: git://github.com/peterkeen/ledger-web.git
+  revision: 8ca61387e16b86af5a17afe70e424904f35ed29a
   specs:
     ledger_web (1.5.2)
       database_cleaner
@@ -41,7 +42,7 @@ GEM
       net-ssh-gateway (>= 1.1.0)
     capistrano-buildpack (0.0.13)
     database_cleaner (1.5.3)
-    diff-lcs (1.2.5)
+    diff-lcs (1.3)
     directory_watcher (1.5.1)
     docverter (1.0.1)
       rest-client (~> 1.7)
@@ -52,7 +53,7 @@ GEM
       domain_name (~> 0.5)
     i18n (0.7.0)
     json (1.8.2)
-    mime-types (2.99.2)
+    mime-types (2.99.3)
     minitest (5.9.0)
     multi_json (1.12.1)
     net-scp (1.2.1)
@@ -78,25 +79,25 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
-    rspec (3.4.0)
-      rspec-core (~> 3.4.0)
-      rspec-expectations (~> 3.4.0)
-      rspec-mocks (~> 3.4.0)
-    rspec-core (3.4.1)
-      rspec-support (~> 3.4.0)
-    rspec-expectations (3.4.0)
+    rspec (3.5.0)
+      rspec-core (~> 3.5.0)
+      rspec-expectations (~> 3.5.0)
+      rspec-mocks (~> 3.5.0)
+    rspec-core (3.5.4)
+      rspec-support (~> 3.5.0)
+    rspec-expectations (3.5.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.4.0)
-    rspec-mocks (3.4.0)
+      rspec-support (~> 3.5.0)
+    rspec-mocks (3.5.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.4.0)
-    rspec-support (3.4.1)
-    sequel (4.28.0)
-    sinatra (1.4.6)
-      rack (~> 1.4)
+      rspec-support (~> 3.5.0)
+    rspec-support (3.5.0)
+    sequel (4.42.1)
+    sinatra (1.4.8)
+      rack (~> 1.5)
       rack-protection (~> 1.4)
       tilt (>= 1.3, < 3)
-    sinatra-contrib (1.4.6)
+    sinatra-contrib (1.4.7)
       backports (>= 2.0)
       multi_json
       rack-protection
@@ -106,7 +107,7 @@ GEM
     sinatra-session (1.0.0)
       sinatra (>= 1.0)
     thread_safe (0.3.5)
-    tilt (2.0.5)
+    tilt (2.0.6)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
     unf (0.1.4)
