@@ -1,12 +1,12 @@
 GIT
-  remote: git://github.com/peterkeen/grack.git
+  remote: https://github.com/peterkeen/grack
   revision: 77ffad0fe9f45a68d1aac2be1502dafe1421113e
   specs:
     grack (0.1.0)
       rack
 
 GIT
-  remote: git://github.com/peterkeen/ledger-web.git
+  remote: https://github.com/peterkeen/ledger-web
   revision: 82045c9ded59496259de8f0c6234a01c83f11d57
   specs:
     ledger_web (1.5.2)
