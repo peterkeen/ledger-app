@@ -46,16 +46,29 @@ from
   sums  
 <% end %>
 
+<div class="page-header">
+  <h1>HRA Tracker</h1>
+</div>
+
 <div class="row">
   <div class="span12">
-    <%= table @deductibles %>
+    <%= table @deductibles do |t| 
+        t.link /Patient/ => "/reports/hra?patient=:this", :if => ->(c,r) { c.value != 'Family' }
+        t.link /Patient/ => "/reports/hra", :if => ->(c,r) { c.value == 'Family' }
+      end %>
   </div>
 </div>
 
 <div class="row">
   <div class="span12">
     <% @unclaimed = RegisterReport.run(account: 'Expenses:Medical', tags_hash: { hra_status: 'unclaimed' }) %>
-    <%= table RegisterReport.run(account: 'Expenses:Medical', tags_hash: { hra_status: 'unclaimed' }) do |t|
+    <% 
+      tags = { hra_status: 'unclaimed' }
+      unless params[:patient].to_s == ""
+        tags[:patient] = params[:patient]
+      end
+    %>
+    <%= table RegisterReport.run(account: 'Expenses:Medical', tags_hash: tags) do |t|
       t.hide /Sum/
 
       RegisterReport.decorate(t)
