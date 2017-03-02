@@ -7,7 +7,7 @@ GIT
 
 GIT
   remote: git://github.com/peterkeen/ledger-web.git
-  revision: 8ca61387e16b86af5a17afe70e424904f35ed29a
+  revision: 82045c9ded59496259de8f0c6234a01c83f11d57
   specs:
     ledger_web (1.5.2)
       database_cleaner
