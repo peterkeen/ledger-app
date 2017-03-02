@@ -1,0 +1,66 @@
+<% @deductibles = query do %>
+with sums as (
+  select
+    patient,
+    sum(amount) as total,
+    sum(case when status = 'unclaimed' then amount else 0 end) as unclaimed,
+    sum(case when status = 'claimed' then amount else 0 end) as claimed,
+    greatest(1300 - sum(amount), 0) as deductible_remaining,
+    greatest(sum(case when status = 'unclaimed' then amount else 0 end) - 1300, 0) as payable
+  from (
+    select
+      xtn_date,
+      account,
+      jtags->>'patient' as patient,
+      jtags->>'hra_status' as status,
+      amount
+    from
+      ledger
+    where
+      account ~ 'Expenses:Medical'
+      and (jtags->>'hra_status') is not null
+  ) x
+  group by
+    patient
+  order by
+    patient
+)
+select 
+  patient as "Patient",
+  total as "Total",
+  unclaimed as "Unclaimed",
+  claimed as "Claimed",
+  deductible_remaining as "Deductible Remaining",
+  payable as "Payable"
+from
+   sums
+union all
+select
+  'Family',
+  sum(total) as total,
+  sum(unclaimed) as unclaimed,
+  sum(claimed) as claimed,
+  greatest(2600 - sum(total), 0),
+  sum(unclaimed) - 2600 as payable
+from
+  sums  
+<% end %>
+
+<div class="row">
+  <div class="span12">
+    <%= table @deductibles %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="span12">
+    <% @unclaimed = RegisterReport.run(account: 'Expenses:Medical', tags_hash: { hra_status: 'unclaimed' }) %>
+    <%= table RegisterReport.run(account: 'Expenses:Medical', tags_hash: { hra_status: 'unclaimed' }) do |t|
+      t.hide /Sum/
+
+      RegisterReport.decorate(t)
+    end
+    %>
+  </div>
+</div>
+

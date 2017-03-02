@@ -9,7 +9,7 @@ set :additional_domains, ['ledger.bugsplat.info']
 set :use_sudo, true
 
 role :web, "kodos.zrail.net"
-set :buildpack_url, "git@git.zrail.net:peter/bugsplat-buildpack-ruby-simple"
+set :buildpack_url, "git@git.zrail.net:peter/bugsplat-buildpack-ruby-shared"
 
 set :user,        "peter"
 set :concurrency, "web=1,load=1"

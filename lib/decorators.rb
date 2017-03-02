@@ -50,9 +50,3 @@ class BankAccountDecorator
     cell
   end
 end
-
-class HideDecorator
-  def decorate(cell, row)
-    nil
-  end
-end
