@@ -41,7 +41,7 @@ select
   sum(unclaimed) as unclaimed,
   sum(claimed) as claimed,
   greatest(2600 - sum(total), 0),
-  sum(unclaimed) - 2600 as payable
+  greatest(sum(unclaimed) - 2600, 0) as payable
 from
   sums  
 <% end %>
