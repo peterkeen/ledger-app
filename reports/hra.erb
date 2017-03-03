@@ -46,6 +46,20 @@ from
   sums  
 <% end %>
 
+<% @unclaimed = query do %>
+select
+  note as "Provider",
+  coalesce(jtags->>'date_of_service', xtn_date::text) as "Date of Service",
+  jtags->>'patient' as "Patient",
+  amount as "Amount",
+  jtags->>'description' as "Description"
+from
+  ledger
+where
+  account ~ 'Expenses:Medical' 
+  and jtags->>'hra_status' = 'unclaimed'
+<% end %> 
+
 <div class="page-header">
   <h1>HRA Tracker</h1>
 </div>
@@ -61,19 +75,8 @@ from
 
 <div class="row">
   <div class="span12">
-    <% @unclaimed = RegisterReport.run(account: 'Expenses:Medical', tags_hash: { hra_status: 'unclaimed' }) %>
-    <% 
-      tags = { hra_status: 'unclaimed' }
-      unless params[:patient].to_s == ""
-        tags[:patient] = params[:patient]
-      end
-    %>
-    <%= table RegisterReport.run(account: 'Expenses:Medical', tags_hash: tags) do |t|
-      t.hide /Sum/
-
-      RegisterReport.decorate(t)
-    end
-    %>
+    <%= @unclaimed.error %>
+    <%= table @unclaimed %>
   </div>
 </div>
 
