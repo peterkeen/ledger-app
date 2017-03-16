@@ -4,7 +4,7 @@ with sums as (
     patient,
     sum(amount) as total,
     sum(case when status = 'unclaimed' then amount else 0 end) as unclaimed,
-    sum(case when status = 'claimed' then amount else 0 end) as claimed,
+    sum(case when status != 'unclaimed' then status::numeric else 0 end) as claimed,
     greatest(1300 - sum(amount), 0) as deductible_remaining,
     greatest(sum(case when status = 'unclaimed' then amount else 0 end) - 1300, 0) as payable
   from (
@@ -41,7 +41,7 @@ select
   sum(unclaimed) as unclaimed,
   sum(claimed) as claimed,
   greatest(2600 - sum(total), 0),
-  greatest(sum(unclaimed) - 2600, 0) as payable
+  sum(total) - sum(claimed) - 2600  as payable
 from
   sums  
 <% end %>
@@ -66,6 +66,7 @@ where
 
 <div class="row">
   <div class="span12">
+    <%= @deductibles.error %>
     <%= table @deductibles do |t| 
         t.link /Patient/ => "/reports/hra?patient=:this", :if => ->(c,r) { c.value != 'Family' }
         t.link /Patient/ => "/reports/hra", :if => ->(c,r) { c.value == 'Family' }
