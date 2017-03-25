@@ -112,7 +112,7 @@ with inc as (
       and <%= @date_clause %>
       and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and <%= @date_clause %>)
     union all
-    select 'Retirement out' as account, -1 * sum(cost) as amount from ledger where account ~ 'Assets:.*:(Rollover|Roth|401K)' and <%= @date_clause %>
+    select 'Retirement out' as account, -1 * sum(cost) as amount from ledger where account ~ 'Assets:Investments:(Traditional|SEP|Roth|401K)' and <%= @date_clause %>
   )
   select replace(account, 'Income:', '') as "Account", amount as "Amount" from inc where round(amount, 0) != 0
   union all
