@@ -7,7 +7,7 @@ GIT
 
 GIT
   remote: https://github.com/peterkeen/ledger-web
-  revision: daef5690a071409a9ac00bfa53eabfcd4901c86b
+  revision: d1bdcacef1d075fa213071424b0b660391ba45c1
   specs:
     ledger_web (1.5.2)
       database_cleaner
@@ -67,7 +67,7 @@ GEM
     netrc (0.11.0)
     pg (0.20.0)
     puma (2.14.0)
-    rack (1.6.4)
+    rack (1.6.5)
     rack-protection (1.5.3)
       rack
     rack-rewrite (1.5.1)
