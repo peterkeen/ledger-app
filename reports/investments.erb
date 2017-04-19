@@ -94,7 +94,6 @@ with months as (
       date: row[0].value,
     }
   end
-  @cagr = sprintf("%0.2f%", (((@nav/@start_nav)**(1/((@nav_data.rows[-1][0].value - @nav_data.rows[0][0].value)/365.0)))-1) * 100)
   cf << Xirr::Transaction.new((@nav_data.rows[-1][2].value * -1).to_f, date: Date.today)
   @xirr = sprintf("%0.2f%", cf.xirr * 100)
 %>
@@ -111,10 +110,7 @@ with months as (
       Our initial fund value on May 31, 2011 was $24,031.65 split among 1,000 shares, giving us an initial NAV of <%= sprintf('$%0.2f', @start_nav) %>.
     </p>
     <p>
-      Current CAGR: <strong><%= @cagr %></strong>
-    </p>
-    <p>
-      Current XIRR: <strong><%= @xirr %></strong>
+      XIRR: <strong><%= @xirr %></strong>
     </p>    
   </div>
 </div>
