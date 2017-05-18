@@ -1,6 +1,26 @@
 require 'digest/sha1'
 require 'json'
 
+class StockData
+  def initialize
+    @db = Sequel.connect(ENV['PRICE_DB_URL'])
+  end
+
+  def call(symbol, start_date, end_date)
+    @db["""
+      select 
+        price_date,
+        close 
+      from 
+        prices 
+        inner join equities on prices.equity_id = equities.id
+      where
+        symbol = ? 
+        and price_date between ? and ?
+    """, symbol, start_date, end_date].map { |r| [r[:price_date], r[:close]] }
+  end
+end
+
 LedgerWeb::Config.new do |config|
   config.set :database_url, ENV['DATABASE_URL']
   config.set :index_report, :monthly_snapshot
@@ -56,6 +76,8 @@ LedgerWeb::Config.new do |config|
   end
 
   config.set :price_lookup_skip_symbols, ['$', 's']
+  config.set :price_db, StockData.new
+  config.set :price_function, lambda { |symbol, min_date, max_date| config.get(:price_db).call(symbol, min_date, max_date) }
 
   config.add_hook :after_load do |db|
     LedgerWeb::Database.load_prices

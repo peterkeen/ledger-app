@@ -661,6 +661,7 @@ from
           t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[4].value || 0) > 0 }
         end
     %>
+    <% if false %>
     <h4>Long-Term Funds</h4>
     <%= @long_term_funds.error %>
     <%= table @long_term_funds do |t|
@@ -670,6 +671,7 @@ from
           t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[4].value || 0) > 0 }
         end
     %>
+    <% end %>
     <h4>Current Accounts</h4>
     <%= @current_accounts.error %>
     <%= table @current_accounts do |t|
@@ -679,6 +681,7 @@ from
           t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[4].value || 0) > 0 }
         end
     %>
+    <% if @long_term_liabilities.rows.length > 0 %>
     <h4>Long Term Liabilities</h4>
     <%= @long_term_liabilities.error %>
     <%= table @long_term_liabilities do |t|
@@ -688,6 +691,7 @@ from
           t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[4].value || 0) > 0 }
         end
     %>    
+    <% end %>
   </div>
 </div>
 <div class="row">
