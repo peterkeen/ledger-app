@@ -46,7 +46,7 @@ end
         <% @files.each do |file| %>
           <tr>
             <td>
-              <a href="/files/<%= file %>"><%= File.basename(file, '.*') %></a>
+              <a href="/files/<%= ERB::Util.url_encode file %>"><%= File.basename(file, '.*') %></a>
             </td>
           </tr>
         <% end %>
