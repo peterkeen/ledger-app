@@ -1,6 +1,6 @@
 <% @pdf_url = request.url.gsub('/reports/', '/pdf/') %>
 <% @unbudgeted = query do %>
-  select
+ select
     real_money - funds
   from (
     select
