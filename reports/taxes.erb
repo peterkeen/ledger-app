@@ -14,7 +14,7 @@
 @selected_year = params[:year].to_s == "" ? Date.new(Date.today.year, 1, 1) : Date.parse(params[:year])
 
 Dir.chdir(File.dirname(ENV['LEDGER_FILE'])) do
-  @files = Dir.glob(File.join('years', @selected_year.year.to_s, 'taxes', '*'))
+  @files = Dir.glob(File.join('years', @selected_year.year.to_s, 'taxes', '*')).sort
 end
 %>
 
