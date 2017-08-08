@@ -40,25 +40,63 @@ with weeks as (
   from
     generate_series(0,<%= @num_weeks %>) x
 ),
-assets as (
+bank_assets as (
   select
     xtn_date,
     xtn_week,
-    amount
+    sum(case when amount > 0 then amount else 0 end) as cash_in,
+    sum(case when amount < 0 then amount else 0 end) as cash_out
   from
     ledger
   where
     account ~ '<%= Constants::CURRENT_ACCOUNTS %>'
-  order by
+  group by
     xtn_date,
-    amount
+    xtn_week
+  order by
+    xtn_date
+),
+liquid_investments as (
+  select
+    xtn_week,
+    xtn_date,
+    sum(case when amount > 0 then amount else 0 end) as cash_in,
+    sum(case when amount < 0 then amount else 0 end) as cash_out
+  from (
+    select 
+      xtn_week,
+      xtn_date,
+      amount * case when commodity = '$' then 1 else (select price from prices where prices.commodity = ledger.commodity order by price_date desc limit 1) end as amount
+    from
+      ledger
+    where
+      account ~ 'Assets:Investments:Taxable:Joint'
+      and commodity ~ 'VASIX'  
+    order by
+      xtn_date
+  ) x
+  group by
+    xtn_week,
+    xtn_date
+),
+assets as (
+  select
+    xtn_date,
+    xtn_week,
+    coalesce(bank_assets.cash_in, 0) + coalesce(liquid_investments.cash_in, 0) as cash_in,
+    coalesce(bank_assets.cash_out, 0) + coalesce(liquid_investments.cash_out, 0) as cash_out
+  from
+    bank_assets
+    left outer join liquid_investments using (xtn_date, xtn_week)
+  order by
+    xtn_date
 )
 select
   weeks.xtn_date::date as "Week",
-  (select sum(amount) from assets where xtn_date < weeks.xtn_date) as "Starting",
-  coalesce((select sum(case when amount > 0 then amount else 0 end) from assets where xtn_date between weeks.xtn_date and weeks.xtn_date + '6 days'::interval), 0) as "Cash In",
-  coalesce((select sum(case when amount < 0 then amount else 0 end) from assets where xtn_date between weeks.xtn_date and weeks.xtn_date + '6 days'::interval), 0) as "Cash Out",
-  (select sum(amount) from assets where xtn_date <= weeks.xtn_date + '6 days'::interval) as "Ending"
+  (select sum(cash_in + cash_out) from assets where xtn_date < weeks.xtn_date) as "Starting",
+  coalesce((select sum(cash_in) from assets where xtn_date between weeks.xtn_date and weeks.xtn_date + '6 days'::interval), 0) as "Cash In",
+  coalesce((select sum(cash_out) from assets where xtn_date between weeks.xtn_date and weeks.xtn_date + '6 days'::interval), 0) as "Cash Out",
+  (select sum(cash_in + cash_out) from assets where xtn_date <= weeks.xtn_date + '6 days'::interval) as "Ending"
 from
   weeks
 where
@@ -66,10 +104,10 @@ where
 union all
 select
   week,
-  coalesce(lag(ending, 1) over (rows unbounded preceding) + (select sum(amount) from assets), (select sum(amount) from assets)) as starting,
+  coalesce(lag(ending, 1) over (rows unbounded preceding) + (select sum(cash_in + cash_out) from assets), (select sum(cash_in + cash_out) from assets)) as starting,
   coalesce(cash_in, 0),
   coalesce(cash_out, 0),
-  ending + (select sum(amount) from assets)
+  ending + (select sum(cash_in + cash_out) from assets)
 from (
   select
      week,
