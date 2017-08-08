@@ -70,8 +70,8 @@ liquid_investments as (
     from
       ledger
     where
-      account ~ 'Assets:Investments:Taxable:Joint'
-      and commodity ~ 'VASIX'  
+      account ~ 'Assets:Investments:(Taxable:Joint|HSA)'
+      and commodity ~ '(<%= Constants::LIQUID_TICKERS %>)'  
     order by
       xtn_date
   ) x

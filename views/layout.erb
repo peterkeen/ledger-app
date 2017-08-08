@@ -21,7 +21,7 @@
     from
       ledger
     where
-      account ~ 'Assets:Investments:Taxable'
+      account ~ 'Assets:Investments:(Taxable|HSA)'
       and commodity ~ '(<%= Constants::LIQUID_TICKERS %>)'  
     group by
       commodity
