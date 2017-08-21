@@ -75,7 +75,7 @@
         from
           ledger
         where
-          account ~ 'Assets:Investments:(Taxable:Joint:Vanguard|HSA)'
+          account ~ 'Assets:Investments:(Taxable:Joint|HSA)'
           and commodity ~ '(<%= Constants::LIQUID_TICKERS %>)'
           and <%= @date_clause_lte %>
         group by
