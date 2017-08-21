@@ -16,7 +16,7 @@ class StockData
         inner join equities on prices.equity_id = equities.id
       where
         symbol = ? 
-        and price_date between ?::date - '1 day'::interval and ?::date
+        and price_date between ?::date - '1 day'::interval and ?::date + '1 day'::interval
     """, symbol, start_date, end_date].map { |r| [r[:price_date], r[:close]] }
   end
 end
