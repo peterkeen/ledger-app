@@ -1,38 +1,45 @@
 <% @pdf_url = request.url.gsub('/reports/', '/pdf/') %>
-<% @unbudgeted = query do %>
- select
-    real_money - funds
-  from (
+<% @cash = query do %>
     select
-      sum(case when account ~ '<%= Constants::CURRENT_ACCOUNTS %>' then amount else 0 end) as real_money,
-      sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds
-    from
-      ledger
-  ) x;
-<% end %>
-
-<% @taxable_investments = query do %>
-  select
-    sum(amount)
-  from (
-    select 
-      commodity,
-      sum(amount) * case when commodity = '$' then 1 else (select price from prices where prices.commodity = ledger.commodity order by price_date desc limit 1) end as amount
-    from
-      ledger
-    where
-      account ~ 'Assets:Investments:(Taxable|HSA)'
-      and commodity ~ '(<%= Constants::LIQUID_TICKERS %>)'  
-    group by
-      commodity
-  ) x;
+      sum(real_money) as real_money,
+      sum(liquid_investments) as liquid_investments,    
+      sum(funds) as funds,
+      sum(liabilities) as liabilities,
+      sum(real_money) + sum(liquid_investments) - sum(funds) + sum(liabilities) as amount
+    from(
+      select
+        sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account !~ 'Liabilities' then amount else 0 end) as real_money,
+        sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
+        sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account ~ 'Liabilities' then amount else 0 end) as liabilities,
+        sum(0) as liquid_investments
+      from
+        ledger
+      union all
+      select
+        sum(0) as real_money,
+        sum(0) as funds,
+        sum(0) as liabilities,
+        sum(amount) as liquid_investments
+      from (
+        select 
+          commodity,
+          sum(amount) * (select price from prices where prices.commodity = ledger.commodity order by price_date desc limit 1) as amount
+        from
+          ledger
+        where
+          account ~ 'Assets:Investments:(Taxable:Joint|HSA)'
+          and commodity ~ '(<%= Constants::LIQUID_TICKERS %>)'
+        group by
+          commodity
+      ) x
+    ) x
 <% end %>
 
 <% @budget = BudgetSummaryReport.run(1, true) %>
 <% @budget_remaining = (@budget.rows[0][3].value || 0) %>
 <% @budget_color = @budget_remaining > 0 ? '#00ff00' : '#ff0000' %>
-<% @unbudgeted_remaining = @unbudgeted.rows[0][0].value + @taxable_investments.rows[0][0].value %>
-<% @unbudgeted_color = @unbudgeted_remaining > 0 ? '#00ff00' : '#ff0000' %>
+<% @cash_remaining = @cash.rows[0][4].value %>
+<% @cash_color = @cash_remaining > 0 ? '#00ff00' : '#ff0000' %>
 
 <% @last_updated_report = query do %>
 select
@@ -112,7 +119,7 @@ end
             <li><p class="navbar-text">Updated <%= @last_updated %></li>
           </ul>
           <ul class="nav pull-right">
-           <li><p class="navbar-text">(<a href="/reports/monthly_snapshot">B</a>: <span style="color: <%= @budget_color %>"><%= sprintf("$%0.2f", @budget_remaining) %></span> C: <span style="color: <%= @unbudgeted_color %>"><%= sprintf("$%0.2f", @unbudgeted_remaining) %></span>)</p></li>
+           <li><p class="navbar-text">(<a href="/reports/monthly_snapshot">B</a>: <span style="color: <%= @budget_color %>"><%= sprintf("$%0.2f", @budget_remaining) %></span> C: <span style="color: <%= @cash_color %>"><%= sprintf("$%0.2f", @cash_remaining) %></span>)</p></li>
            <li><a href="<%= @pdf_url %>">PDF</a></li>
           </ul>
         </div>

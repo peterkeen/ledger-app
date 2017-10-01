@@ -56,7 +56,7 @@
       select
         sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account !~ 'Liabilities' then amount else 0 end) as real_money,
         sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
-        sum(case when account ~ '(Liabilities:Chase|Liabilities:Payable)' then amount else 0 end) as liabilities,
+        sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account ~ 'Liabilities' then amount else 0 end) as liabilities,    
         sum(0) as liquid_investments
       from
         ledger
@@ -346,10 +346,9 @@ from
 
 <%
   @stash_start = params[:stash_start] || [@selected_date, Date.parse('2015-01-01')].min
-  @asset_regex = params[:include_mortgage] ? 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex|House:Zestimate)' : 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex)'
+  @asset_regex = params[:include_mortgage] ? 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex|SelectAccount:HSA|House:Zestimate)' : 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex|SelectAccount:HSA)'
   @liabilities_regex = params[:include_mortgage] ? 'Funds' : '(Funds|Mortgage)'
 %>
-
 
 <% @stash = query do %>
   with months as (
