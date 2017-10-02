@@ -9,7 +9,7 @@
     from(
       select
         sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account !~ 'Liabilities' then amount else 0 end) as real_money,
-        sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
+        sum(case when account ~ '^(Assets:Funds:|Budget)' then amount else 0 end) as funds,
         sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account ~ 'Liabilities' then amount else 0 end) as liabilities,
         sum(0) as liquid_investments
       from
