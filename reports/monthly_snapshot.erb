@@ -119,6 +119,92 @@ with inc as (
   select 'Total' as "Account", sum(amount) as "Amount" from inc
 <% end %>
 
+<% @bgt_query = capture do %>
+with budgeted as (
+  select
+      b.account as "Account",
+      b.amount as "Budget",
+      coalesce(x.amount, 0) as "Spent",
+      b.amount - coalesce(x.amount, 0) as "Diff"
+  from
+  (select date_trunc('<%= @trunc_to %>', xtn_month) as <%= @date_column %>, account, sum(amount) as amount from budget_months where <%= @budget_clause %> and amount > 0 group by <%= @date_column %>, account) b
+  left outer join (
+      select
+          <%= @date_column %>,
+          account,
+          sum(amount) as amount
+      from
+          ledger
+      where
+          account in (select distinct account from budget_periods)
+          and <%= @date_clause %>
+          and tags !~ 'Reimburseable'
+          and tags !~ 'nobudget'
+          and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and <%= @date_clause %>)
+      group by
+          <%= @date_column %>,
+          account
+  ) x using (account)
+  order by
+     b.account
+)
+select
+  *
+from
+  budgeted
+union all
+select
+  'Total' as "Account",
+  sum("Budget") as "Budget",
+  sum("Spent") as "Spent",
+  sum("Diff") as "Diff"
+from
+  budgeted  
+<% end %>
+
+<% @budgeted_expenses = query do %>
+with budgeted as (
+  select
+      b.account as "Account",
+      b.amount as "Budget",
+      coalesce(x.amount, 0) as "Spent",
+      b.amount - coalesce(x.amount, 0) as "Diff"
+  from
+  (select date_trunc('<%= @trunc_to %>', xtn_month) as <%= @date_column %>, account, sum(amount) as amount from budget_months where <%= @budget_clause %> and amount > 0 group by <%= @date_column %>, account) b
+  left outer join (
+      select
+          <%= @date_column %>,
+          account,
+          sum(amount) as amount
+      from
+          ledger
+      where
+          account in (select distinct account from budget_periods)
+          and <%= @date_clause %>
+          and tags !~ 'Reimburseable'
+          and tags !~ 'nobudget'
+          and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and <%= @date_clause %>)
+      group by
+          <%= @date_column %>,
+          account
+  ) x using (account)
+  order by
+     b.account
+)
+select
+  *
+from
+  budgeted
+union all
+select
+  'Total' as "Account",
+  sum("Budget") as "Budget",
+  sum("Spent") as "Spent",
+  sum("Diff") as "Diff"
+from
+  budgeted    
+<% end %>
+
 <% @unbudgeted_expenses = query do %>
   with ubexp as (
     select
@@ -134,7 +220,7 @@ with inc as (
       and tags !~ 'skipunbudget: true'
       and <%= @date_clause %>
       and account !~ '^(Expenses:Taxes|Expenses:Insurance:Medical)'
-      and xtn_id not in (select distinct xtn_id from ledger where account ~ '(Assets:Funds|Budget)' and <%= @date_clause %>)
+      and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and <%= @date_clause %>)
     group by
       account
     order by
@@ -155,7 +241,7 @@ with inc as (
 <% @funds = query do %>
   with funds as (
     select
-      case when min(xtn_date) < '2017-10-01' then replace(account, 'Assets:Funds:', '') else replace(account, 'Budget:', '') end as "Fund",
+      replace(account, 'Assets:Funds:', '') as "Fund",
       sum(case when <%= @date_column %> < '<%= @selected_date %>' then amount else 0 end) as "Start",  
       sum(case when amount > 0 and <%= @date_clause %> then amount else 0 end) as "In",
       sum(case when amount < 0 and <%= @date_clause %> then amount else 0 end) as "Out", 
@@ -164,7 +250,7 @@ with inc as (
     from
       ledger
     where
-      account ~ '^(Assets:Funds|Budget)'
+      account ~ '^Assets:Funds'
       and account !~ '<%= Constants::LONG_TERM_FUNDS %>'
       and <%= @date_column %> <= '<%= @selected_date %>'
     group by
@@ -182,7 +268,7 @@ with inc as (
 <% @long_term_funds = query do %>
   with funds as (
     select
-      case when min(xtn_date) < '2017-10-01' then replace(account, 'Assets:Funds:', '') else replace(account, 'Budget:', '') end as "Fund",  
+      replace(account, 'Assets:Funds:', '') as "Fund",
       sum(case when <%= @date_column %> < '<%= @selected_date %>' then amount else 0 end) as "Start",  
       sum(case when amount > 0 and <%= @date_clause %> then amount else 0 end) as "In",
       sum(case when amount < 0 and <%= @date_clause %> then amount else 0 end) as "Out", 
@@ -191,7 +277,7 @@ with inc as (
     from
       ledger
     where
-      account ~ '^(Assets:Funds|Budget)'
+      account ~ '^Assets:Funds'
       and account ~ '<%= Constants::LONG_TERM_FUNDS %>'
       and <%= @date_column %> <= '<%= @selected_date %>'
     group by
@@ -244,7 +330,7 @@ with inc as (
     from
       ledger
     where
-      account ~ '<%= Constants::LONG_TERM_LIABILITIES %>' and account !~ 'Budget'
+      account ~ '<%= Constants::LONG_TERM_LIABILITIES %>'
       and <%= @date_column %> <= '<%= @selected_date %>'                                              
     group by
       account
@@ -468,6 +554,8 @@ from
       </thead>
       <%
         @income_value = (@income.rows[-1][1].value rescue 0) || 0
+        @budgeted_value = (@budgeted_expenses.rows[-1][2].value rescue 0) || 0
+        @budgeted_diff = (@budgted_expenses.rows[-1][3].value rescue 0) || 0
         @unbudgeted_value = (@unbudgeted_expenses.rows[-1][1].value rescue 0) || 0
         @funds_in_value = ((@funds.rows[-1][2].value rescue 0) || 0) + ((@long_term_funds.rows[-1][2].value rescue 0) || 0)
         @funds_out_value = ((@funds.rows[-1][3].value rescue 0) || 0) + ((@long_term_funds.rows[-1][3].value rescue 0) || 0)
@@ -476,6 +564,10 @@ from
         <tr>
           <td>Income</td>
           <td><span class="pull-right"><%= sprintf("%0.2f", @income_value) %></span></td>
+        </tr>
+        <tr>
+          <td>Budgeted Expenses</td>
+          <td><span class="pull-right"><span style="<%= @budgeted_diff > 0 ? 'color: red' : ''%>"><%= sprintf("%0.2f", @budgeted_value) %></span></span></td>
         </tr>
         <tr>
           <td>Unbudgeted Expenses</td>
@@ -551,10 +643,18 @@ from
 </div>
 <div class="row">
   <div class="span12">
+    <h4>Budgeted Expenses</h4>
+    <%= @budgeted_expenses.error %>
+    <%= table @budgeted_expenses do |t|
+          t.decorate /Account/ => ExpensesDecorator.new(@register_param => @selected_date, cleared: '')
+          t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
+          t.decorate /Diff/ => StyleDecorator.new(color: 'red'), :if => lambda { |c,r| c.value < 0 }
+        end
+    %>
     <h4>Short-Term Funds</h4>
     <%= @funds.error %>
     <%= table @funds do |t|
-          t.link /Fund/ => "/reports/_register?account=Budget::0&#{@register_param}=#{@selected_date}&cleared=", :if => ->(c,r){c.text != "Total"}
+          t.link /Fund/ => "/reports/_register?account=Assets:Funds::0&#{@register_param}=#{@selected_date}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
           t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ (r[4].value || 0) < 0 }
           t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[4].value || 0) > 0 }
@@ -563,7 +663,7 @@ from
     <h4>Long-Term Funds</h4>
     <%= @long_term_funds.error %>
     <%= table @long_term_funds do |t|
-          t.link /Fund/ => "/reports/_register?account=Budget::0&#{@register_param}=#{@selected_date}&cleared=", :if => ->(c,r){c.text != "Total"}
+          t.link /Fund/ => "/reports/_register?account=Assets:Funds::0&#{@register_param}=#{@selected_date}&cleared=", :if => ->(c,r){c.text != "Total"}
           t.decorate /.*/ => StyleDecorator.new('font-weight' => 'bold'), :if => ->(c,r){r[0].text == 'Total'}
           t.decorate /Net/ => StyleDecorator.new('color' => 'red'), :if => ->(c,r){ (r[4].value || 0) < 0 }
           t.decorate /Net/ => StyleDecorator.new('color' => 'green'), :if => ->(c,r){ (r[4].value || 0) > 0 }
@@ -702,6 +802,28 @@ from
         chart.render();
       });
     </script> 
+    <%
+      stash = @stash.rows[0][-1].value
+      swr = ((stash || 0.0) * 0.04) / 12
+      budget = @budgeted_expenses.rows[-1][1].value
+
+      progress = sprintf("%0.2f%", swr / budget * 100)
+    %>
+    <table class="table table-striped table-hover table-bordered table-condensed" style="margin-top: 2em">
+      <thead>
+        <tr>
+          <th><span class="pull-right">4% SWR</span></th>
+          <th><span class="pull-right">% progress to FI</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="pull-right"><%= sprintf("%0.2f", swr) %></span></td>
+          <td><span class="pull-right"><%= progress %></span></td>
+        </tr>
+      </tbody>
+    </table>
+    <a href="/reports/_register?account=Expenses&tags=hsa_status:unclaimed&cleared=">HSA Unclaimed Expenses</a>
   </div>
 </div>  
 
