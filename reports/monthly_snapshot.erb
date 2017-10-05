@@ -347,7 +347,7 @@ from
 <%
   @stash_start = params[:stash_start] || [@selected_date, Date.parse('2015-01-01')].min
   @asset_regex = params[:include_mortgage] ? 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex|SelectAccount:HSA|House:Zestimate)' : 'Assets:(.*:(Checking|Savings)|Emigrant|ING|UWCU|Amex|SelectAccount:HSA)'
-  @liabilities_regex = params[:include_mortgage] ? '(Funds|Budget)' : '(Funds|Budget|Mortgage)'
+  @liabilities_regex = params[:include_mortgage] ? 'Funds' : '(Funds|Mortgage)'
 %>
 
 <% @stash = query do %>
@@ -372,7 +372,7 @@ cash_assets as (
     from
         ledger
     where
-        account !~ 'Funds|Budget'
+        account !~ 'Funds'
         and account ~ '<%= @asset_regex %>'
     order by
         xtn_date,
