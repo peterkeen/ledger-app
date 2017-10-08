@@ -150,4 +150,10 @@ LedgerWeb::Config.new do |config|
     db.run("insert into calendar select xtn_date, date_trunc('week', xtn_date)::date as xtn_week, date_trunc('month', xtn_date)::date as xtn_month, date_trunc('year', xtn_date)::date as xtn_year, to_char(xtn_date, 'ID')::integer as dow, to_char(xtn_date, 'W')::integer as wom, to_char(xtn_date, 'IW')::integer as woy from (select ('2007-01-01'::date + (x || ' days')::interval)::date as xtn_date from generate_series(0,20000) x) x")
   end
 
+  config.add_hook :after_load do |db|
+    puts "Updating prices_months"
+    db["delete from prices_months"].delete
+    db.run("insert into prices_months select xtn_month, symbol, amount from (select date_trunc('month', price_date) as xtn_month, commodity as symbol, price as amount, row_number() over (partition by commodity, date_trunc('month', price_date) order by price_date desc) rank from prices) x where rank = 1")
+  end
+
 end
