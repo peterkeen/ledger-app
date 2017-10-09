@@ -71,7 +71,7 @@
       from (
         select 
           commodity,
-          sum(amount) * (select price from prices where prices.commodity = ledger.commodity and date_trunc('<%= @trunc_to %>', price_date) <= '<%= @selected_date %>' order by price_date desc limit 1) as amount
+          sum(amount) * (select amount from prices_months where prices_months.symbol = ledger.commodity and prices_months.xtn_month <= '<%= @selected_date %>' order by xtn_month desc limit 1) as amount
         from
           ledger
         where
@@ -378,22 +378,6 @@ cash_assets as (
         xtn_date,
         amount
 ),
-ending_prices as (
-    select 
-        xtn_month::date as xtn_month,
-        commodity, 
-        price
-    from (
-        select 
-            date_trunc('month', price_date) as xtn_month,
-            commodity,
-            price,
-            row_number() over (partition by date_trunc('month', price_date), commodity order by price_date desc) as rk
-       from
-            prices
-    ) x
-    where rk = 1
-),
 stocks as (
     select
         xtn_month,
@@ -414,7 +398,7 @@ stocks as (
 stock_assets as (
     select
         xtn_month,
-        sum(case when commodity = '$' then amount else amount * (select price from ending_prices p where p.xtn_month <= x.xtn_month and p.commodity = x.commodity order by p.xtn_month desc limit 1) end)  as amount
+        sum(case when commodity = '$' then amount else amount * (select amount from prices_months p where p.xtn_month <= x.xtn_month and p.symbol = x.commodity order by p.xtn_month desc limit 1) end)  as amount
     from (
         select
             xtn_month,

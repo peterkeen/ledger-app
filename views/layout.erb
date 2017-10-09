@@ -23,7 +23,7 @@
       from (
         select 
           commodity,
-          sum(amount) * (select price from prices where prices.commodity = ledger.commodity order by price_date desc limit 1) as amount
+          sum(amount) * (select amount from prices_months where prices_months.symbol = ledger.commodity order by xtn_month desc limit 1) as amount
         from
           ledger
         where
