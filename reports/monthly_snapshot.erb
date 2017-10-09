@@ -71,7 +71,7 @@
       from (
         select 
           commodity,
-          sum(amount) * (select amount from prices_months where prices_months.symbol = ledger.commodity and prices_months.xtn_month = '<%= @selected_date %>' order by xtn_month desc limit 1) as amount
+          sum(amount) * (select amount from prices_months where prices_months.symbol = ledger.commodity and prices_months.xtn_month <= '<%= @selected_date %>' order by xtn_month desc limit 1) as amount
         from
           ledger
         where
@@ -398,7 +398,7 @@ stocks as (
 stock_assets as (
     select
         xtn_month,
-        sum(case when commodity = '$' then amount else amount * (select amount from prices_months p where p.xtn_month = x.xtn_month and p.symbol = x.commodity order by p.xtn_month desc limit 1) end)  as amount
+        sum(case when commodity = '$' then amount else amount * (select amount from prices_months p where p.xtn_month <= x.xtn_month and p.symbol = x.commodity order by p.xtn_month desc limit 1) end)  as amount
     from (
         select
             xtn_month,
