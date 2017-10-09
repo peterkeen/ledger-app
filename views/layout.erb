@@ -8,9 +8,9 @@
       sum(real_money) + sum(liquid_investments) - sum(funds) + sum(liabilities) as amount
     from(
       select
-        sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account !~ 'Liabilities' then amount else 0 end) as real_money,
-        sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
-        sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account ~ 'Liabilities' then amount else 0 end) as liabilities,
+        sum(case when account in (select account from accounts where account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account !~ 'Liabilities') then amount else 0 end) as real_money,
+        sum(case when account in (select account from accounts where account ~ '^Assets:Funds:') then amount else 0 end) as funds,
+        sum(case when account in (select account from accounts where account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account ~ 'Liabilities') then amount else 0 end) as liabilities,
         sum(0) as liquid_investments
       from
         ledger
@@ -27,7 +27,7 @@
         from
           ledger
         where
-          account ~ 'Assets:Investments:(Taxable:Joint|HSA)'
+          account in (select account from accounts where account ~ 'Assets:Investments:(Taxable:Joint|HSA)')
           and commodity ~ '(<%= Constants::LIQUID_TICKERS %>)'
         group by
           commodity

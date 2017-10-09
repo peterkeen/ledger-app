@@ -54,9 +54,9 @@
       sum(real_money) + sum(liquid_investments) - sum(funds) + sum(liabilities) as amount
     from(
       select
-        sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account !~ 'Liabilities' then amount else 0 end) as real_money,
-        sum(case when account ~ '^Assets:Funds:' then amount else 0 end) as funds,
-        sum(case when account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account ~ 'Liabilities' then amount else 0 end) as liabilities,    
+        sum(case when account in (select account from accounts where account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account !~ 'Liabilities') then amount else 0 end) as real_money,
+        sum(case when account in (select account from accounts where account ~ '^Assets:Funds:') then amount else 0 end) as funds,
+        sum(case when account in (select account from accounts where account ~ '(<%= Constants::CURRENT_ACCOUNTS %>)' and account ~ 'Liabilities') then amount else 0 end) as liabilities,    
         sum(0) as liquid_investments
       from
         ledger
@@ -75,7 +75,7 @@
         from
           ledger
         where
-          account ~ 'Assets:Investments:(Taxable:Joint|HSA)'
+          account in (select account from accounts where account ~ 'Assets:Investments:(Taxable:Joint|HSA)')
           and commodity ~ '(<%= Constants::LIQUID_TICKERS %>)'
           and <%= @date_clause_lte %>
         group by
@@ -108,11 +108,11 @@ with inc as (
     from
       ledger
     where
-      account ~ '^Expenses:Taxes|Expenses:Insurance:Medical'
+      account in (select account from accounts where account ~ '^Expenses:Taxes|Expenses:Insurance:Medical')
       and <%= @date_clause %>
-      and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and <%= @date_clause %>)
+      and xtn_id not in (select distinct xtn_id from ledger where account in (select account from accounts where account ~ 'Assets:Funds') and <%= @date_clause %>)
     union all
-    select 'Retirement out' as account, -1 * sum(cost) as amount from ledger where account ~ 'Assets:Investments:(Traditional|SEP|Roth|401K)' and <%= @date_clause %>
+    select 'Retirement out' as account, -1 * sum(cost) as amount from ledger where account in (select account from accounts where account ~ 'Assets:Investments:(Traditional|SEP|Roth|401K)') and <%= @date_clause %>
   )
   select replace(account, 'Income:', '') as "Account", amount as "Amount" from inc where round(amount, 0) != 0
   union all
@@ -183,7 +183,7 @@ with budgeted as (
           and <%= @date_clause %>
           and tags !~ 'Reimburseable'
           and tags !~ 'nobudget'
-          and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and <%= @date_clause %>)
+          and xtn_id not in (select distinct xtn_id from ledger where account in (select account from accounts where account ~ 'Assets:Funds') and <%= @date_clause %>)
       group by
           <%= @date_column %>,
           account
@@ -219,7 +219,7 @@ from
       )
       and tags !~ 'skipunbudget: true'
       and <%= @date_clause %>
-      and account !~ '^(Expenses:Taxes|Expenses:Insurance:Medical)'
+      and account in (select account from accounts where account !~ '^(Expenses:Taxes|Expenses:Insurance:Medical)')
       and xtn_id not in (select distinct xtn_id from ledger where account ~ 'Assets:Funds' and <%= @date_clause %>)
     group by
       account
@@ -250,8 +250,8 @@ from
     from
       ledger
     where
-      account ~ '^Assets:Funds'
-      and account !~ '<%= Constants::LONG_TERM_FUNDS %>'
+      account in (select account from accounts where account ~ '^Assets:Funds')
+      and account in (select account from accounts where account !~ '<%= Constants::LONG_TERM_FUNDS %>')
       and <%= @date_column %> <= '<%= @selected_date %>'
     group by
       account
@@ -277,8 +277,8 @@ from
     from
       ledger
     where
-      account ~ '^Assets:Funds'
-      and account ~ '<%= Constants::LONG_TERM_FUNDS %>'
+      account in (select account from accounts where account ~ '^Assets:Funds')
+      and account in (select account from accounts where account ~ '<%= Constants::LONG_TERM_FUNDS %>')
       and <%= @date_column %> <= '<%= @selected_date %>'
     group by
       account
@@ -304,7 +304,7 @@ from
     from
       ledger
     where
-      account ~ '<%= Constants::CURRENT_ACCOUNTS %>'
+      account in (select account from accounts where account ~ '<%= Constants::CURRENT_ACCOUNTS %>')
       and <%= @date_column %> <= '<%= @selected_date %>'
     group by
       account
@@ -330,7 +330,7 @@ from
     from
       ledger
     where
-      account ~ '<%= Constants::LONG_TERM_LIABILITIES %>'
+      account in (select account from accounts where account ~ '<%= Constants::LONG_TERM_LIABILITIES %>')
       and <%= @date_column %> <= '<%= @selected_date %>'                                              
     group by
       account
@@ -372,8 +372,8 @@ cash_assets as (
     from
         ledger
     where
-        account !~ 'Funds'
-        and account ~ '<%= @asset_regex %>'
+        account in (select account from accounts where account !~ 'Funds')
+        and account in (select account from accounts where account ~ '<%= @asset_regex %>')
     order by
         xtn_date,
         amount
@@ -386,7 +386,7 @@ stocks as (
     from
         ledger
     where
-        account ~ 'Assets:Investments'
+        account in (select account from accounts where account ~ 'Assets:Investments')
         or account = 'Assets:401K:Contribution'
     group by
         xtn_month,
@@ -422,8 +422,8 @@ liabilities as (
    from
        ledger
    where
-       account ~ 'Liabilities'
-       and account !~ '<%= @liabilities_regex %>'
+       account in (select account from accounts where account ~ 'Liabilities')
+       and account in (select account from accounts where account !~ '<%= @liabilities_regex %>')
 )
 select
     xtn_month as "Month",
@@ -451,7 +451,7 @@ with amounts as (
     from
         ledger
     where
-        account ~ 'Assets:Investments'
+        account in (select account from accounts where account ~ 'Assets:Investments')
         and <%= @date_column %> <= '<%= @selected_date %>'
     group by
         commodity

@@ -37,7 +37,7 @@ with months as (
     from
         ledger
     where
-        account ~ 'Assets:Investments'
+        account in (select account from accounts where account ~ 'Assets:Investments')
     group by
         xtn_month,
         commodity
