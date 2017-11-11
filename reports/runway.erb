@@ -119,7 +119,7 @@ from (
       week,
       week_num,
       row_number() over (rows unbounded preceding) as row_number,
-      -1 * coalesce((select sum(amount) from budget_periods b where b.week = week_num and (x.week between from_date and to_date or (x.week >= from_date and to_date is null))), 0) - <%= @unbudget %> as cash_out
+      -1 * coalesce((select sum(amount) from budget_periods b where (b.week is null or b.week = week_num) and (b.month is null or b.month = extract(month from x.week)) and (x.week between from_date and to_date or (x.week >= from_date and to_date is null))), 0) - <%= @unbudget %> as cash_out
     from (
       select
         week,
