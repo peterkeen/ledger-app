@@ -21,6 +21,58 @@ class StockData
   end
 end
 
+class Amortization
+  INTEREST_RATE = 0.0375
+  FIXED_PAYMENT = 1111.51
+
+  def self.call(db)
+
+    db.fetch("select xtn_month, account, amount from ledger where account in ('Expenses:Interest:Mortgage', 'Liabilities:Loans:Mortgage') and xtn_month < date_trunc('month', now())").each do |row|
+      month = row[:xtn_month]
+
+      db[:budget_periods].insert(
+        account: row[:account],
+        amount: row[:amount],
+        from_date: month.to_s,
+        to_date: ((month >> 1) - 1).to_s,
+        week: 1
+      )
+    end
+
+    current_balance = db.fetch("select sum(amount) as amount from ledger where account = 'Liabilities:Loans:Mortgage'").first[:amount] * -1
+
+    interest_rate_per_month = INTEREST_RATE / 12
+
+    today = Date.today
+    month = Date.new(today.year, today.month, 1)
+
+    while current_balance >= 0
+      interest = (current_balance * interest_rate_per_month).round(2)
+      principal = FIXED_PAYMENT - interest
+
+      db[:budget_periods].insert(
+        account: 'Expenses:Interest:Mortgage',
+        amount: interest.to_f.round(2),
+        from_date: month.to_s,
+        to_date: ((month >> 1) - 1).to_s,
+        week: 1
+      )
+
+      db[:budget_periods].insert(
+        account: 'Liabilities:Loans:Mortgage',
+        amount: principal.to_f.round(2),
+        from_date: month.to_s,
+        to_date: ((month >> 1) - 1).to_s,
+        week: 1
+      )      
+
+      current_balance = current_balance - principal
+
+      month = month >> 1
+    end
+  end  
+end
+
 LedgerWeb::Config.new do |config|
   config.set :database_url, ENV['DATABASE_URL']
   config.set :index_report, :monthly_snapshot
@@ -110,6 +162,11 @@ LedgerWeb::Config.new do |config|
   end
 
   config.add_hook :after_load do |db|
+    puts "Calculating mortgage amortization"
+    Amortization.call(db)
+  end
+
+  config.add_hook :after_load do |db|
     puts "Loading asset_allocation"
 
     db["delete from asset_allocation"].delete
@@ -164,5 +221,4 @@ LedgerWeb::Config.new do |config|
     db.run("insert into accounts select distinct account from ledger")
     db.run("analyze accounts")
   end
-
 end
