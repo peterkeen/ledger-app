@@ -39,7 +39,7 @@ class Amortization
       )
     end
 
-    current_balance = db.fetch("select sum(amount) as amount from ledger where account = 'Liabilities:Loans:Mortgage'").first[:amount] * -1
+    current_balance = db.fetch("select sum(amount) as amount from ledger where account = 'Liabilities:Loans:Mortgage' and xtn_month < date_trunc('month', now())").first[:amount] * -1
 
     interest_rate_per_month = INTEREST_RATE / 12
 
