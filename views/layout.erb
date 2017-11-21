@@ -35,6 +35,20 @@
     ) x
 <% end %>
 
+<% @mortgage = query do %>
+  select
+    (select coalesce(sum(amount), 0) from ledger where account = 'Assets:Funds:Mortgage Payoff') as fund_amount,
+    (select -1 * coalesce(sum(amount), 0) from ledger where account = 'Liabilities:Loans:Mortgage') as mortgage_amount  
+<% end %>
+<%
+  p @mortgage.error
+  if @mortgage.rows[0][1].value == 0
+    @mortgage_percent = 'PAID IN FULL'
+  else
+    @mortgage_percent = sprintf("%0.1f%", (@mortgage.rows[0][0].value / @mortgage.rows[0][1].value) * 100.0)
+  end
+%>
+
 <% @budget = BudgetSummaryReport.run(1, true) %>
 <% @budget_remaining = (@budget.rows[0][3].value || 0) %>
 <% @budget_color = @budget_remaining > 0 ? '#00ff00' : '#ff0000' %>
@@ -119,7 +133,11 @@ end
             <li><p class="navbar-text">Updated <%= @last_updated %></li>
           </ul>
           <ul class="nav pull-right">
-           <li><p class="navbar-text">(<a href="/reports/monthly_snapshot">B</a>: <span style="color: <%= @budget_color %>"><%= sprintf("$%0.2f", @budget_remaining) %></span> C: <span style="color: <%= @cash_color %>"><%= sprintf("$%0.2f", @cash_remaining) %></span>)</p></li>
+            <li>
+             <p class="navbar-text">
+               (<a href="/reports/monthly_snapshot">B</a>: <span style="color: <%= @budget_color %>"><%= sprintf("$%0.2f", @budget_remaining) %></span> C: <span style="color: <%= @cash_color %>"><%= sprintf("$%0.2f", @cash_remaining) %></span> M: <%= @mortgage_percent %>)
+             </p>
+           </li>
            <li><a href="<%= @pdf_url %>">PDF</a></li>
           </ul>
         </div>
