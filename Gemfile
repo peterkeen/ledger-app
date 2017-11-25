@@ -6,7 +6,7 @@ gem "ledger_web", git: 'https://github.com/peterkeen/ledger-web'
 #gem "ledger_web", path: "/Users/peter/devel/ledger-web"
 gem "capistrano", '2.12.0'
 gem "capistrano-buildpack", '0.0.14'
-gem "rack-ssl"
+gem "rack-ssl", '~> 1.4.0'
 gem 'grack', git: 'https://github.com/peterkeen/grack'
 gem 'rake'
 gem 'json'
